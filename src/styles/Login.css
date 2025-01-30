@@ -1,0 +1,88 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f8f8;
+}
+
+.login-card {
+  width: 350px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: #d9d9d9;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 20px;
+}
+
+.login-form .ant-input {
+  height: 45px;
+  border-radius: 8px;
+}
+
+.login-button {
+  width: 100%;
+  height: 45px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  background: #007bff;
+  border: none;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  background: #0056b3;
+}
+
+.cancel-button {
+  width: 100%;
+  height: 45px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  background: white;
+  border: 1px solid #007bff;
+  color: #007bff;
+  margin-top: 10px;
+}
+
+.cancel-button:hover {
+  background: #f0f0f0;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.footer-links a {
+  font-size: 14px;
+  color: #777;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #333;
+}
