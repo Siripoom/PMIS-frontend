@@ -1,0 +1,38 @@
+  /* พื้นหลังของหน้า Dashboard */
+  .dashboard-container {
+    background-color: #D9D9D9;
+    min-height: 100vh;
+    padding: 20px;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+
+    /* ใช้ Flexbox จัดให้อยู่ตรงกลาง */
+    display: flex;
+    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  }
+
+  /* กล่องหลัก */
+  .centered-box {
+    background-color: white;
+    width: 1300px;  /* ความกว้างของกล่อง */
+    height: 650px; /* ความสูงของกล่อง */
+    border-radius: 20px; /* ทำให้มุมมน */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* เพิ่มเงา */
+    width: calc(1540px -  100%);  /* ขยายออกทั้งซ้ายและขวา โดยเว้นขอบ 50px แต่ละข้าง */
+    margin-left: -720px;
+    /* จัดให้อยู่ตรงกลาง */
+    justify-items: center;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+  }
+/* ข้อความใน centered-box */
+.dashboard-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #486284;
+  text-align: center;
+  margin-top: -50px;
+}

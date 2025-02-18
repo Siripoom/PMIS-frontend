@@ -1,88 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* พื้นหลัง */
 .login-container {
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f8f8f8;
+  background-color: #0B1622;
 }
 
+/* กล่อง Login */
 .login-card {
-  width: 350px;
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.avatar {
-  width: 80px;
-  height: 80px;
-  background: #d9d9d9;
-  border-radius: 50%;
-  margin: 0 auto 15px;
-}
-
-.title {
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 20px;
-}
-
-.login-form .ant-input {
-  height: 45px;
-  border-radius: 8px;
-}
-
-.login-button {
-  width: 100%;
-  height: 45px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  background: #007bff;
-  border: none;
-  margin-top: 10px;
-}
-
-.login-button:hover {
-  background: #0056b3;
-}
-
-.cancel-button {
-  width: 100%;
-  height: 45px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  background: white;
-  border: 1px solid #007bff;
-  color: #007bff;
-  margin-top: 10px;
-}
-
-.cancel-button:hover {
-  background: #f0f0f0;
-}
-
-.footer-links {
+   width: 444px; /* ปรับขนาดกว้างตามที่ต้องการ */
+  height: 685px; /* ปรับขนาดสูงตามที่ต้องการ */
+  background-color: white; /* พื้นหลังสีขาว */
+  border-radius: 70px; /* ขอบมน */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
   display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
+  justify-content: center;
+  align-items: center;
+}
+/* โลโก้ */
+.login-logo {
+  width: 130px; /* กำหนดขนาดกว้าง */
+  height: 130px; /* กำหนดขนาดสูง */
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  transform: translateX(-50%);
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 50%; /* ทำให้เงาดูสวยขึ้นในกรณีเป็นโลโก้วงกลม */
+}
+/* ข้อความ "Sign in" */
+
+/* ข้อความ "Sign in" */
+.Txtsing {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 700 !important; /* เปลี่ยนเป็น Bold */
+  color: #000; /* สีดำ */
+  text-align: center;
+
+  position: absolute;
+  top: 190px; /* ตำแหน่ง Y */
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 16px; /* ให้ห่างจาก "ระบบบริหารจัดการโครงการ" 1 บรรทัด */
 }
 
-.footer-links a {
+
+/* ข้อความ "ระบบบริหารจัดการโครงการ" */
+
+.login-subtitle {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 18px !important; /* ปรับขนาดเป็น 18px */
+  font-weight: 400 !important; /* Regular */
+  color: #000000; /* สีดำ */
+  text-align: center;
+
+  position: absolute;
+  top: 223px; /* ขยับลงให้ห่างจาก "Sign in" */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Input Email */
+.email-input, .password-input {
+  width: 300px;
+  border-radius: 26px;
+  padding: 18px;
   font-size: 14px;
-  color: #777;
-  text-decoration: none;
+  text-align: center;
+
+  position: absolute;
+  transform: translateX(-50%);
 }
 
-.footer-links a:hover {
-  color: #333;
+/* ปรับตำแหน่ง Email และ Password */
+.email-input {
+  top: 280px; /* ตำแหน่งของ Email */
 }
+
+.password-input {
+  top: 350px; /* ขยับ Password ลงมาห่างจาก Email */
+  
+}
+
+/* ปรับขนาดและความบางของไอคอน */
+.email-input .anticon, .password-input .anticon {
+  font-size: 19px;
+  color: #bbb;
+  font-weight: 300;
+}
+
+/* ตั้งค่า placeholder ให้เป็น Poppins */
+.email-input::placeholder, .password-input::placeholder {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #aaa;
+  opacity: 1;
+}
+
+/* ปุ่ม Login */
+.login-button {
+  width: 300px; /* กำหนดขนาดให้เท่ากับช่อง Email และ Password */
+  height: 55px; /* ความสูงเท่ากัน */
+  border-radius: 26px; /* ขอบมนเหมือนกัน */
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #007bff; /* สีพื้นหลัง */
+  color: white; /* สีข้อความ */
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 420px; /* ทำให้ปุ่มอยู่ข้างล่างช่อง Password */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* เอฟเฟกต์เมื่อโฮเวอร์ */
+.login-button:hover {
+  background-color: #0056b3; /* ทำให้สีเข้มขึ้นเมื่อชี้ */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* เอฟเฟกต์เมื่อคลิก */
+.login-button:active {
+  background-color: #0046a3;
+}
+
+/* ปุ่ม Login */
+.login-button {
+  width: 300px;
+  height: 55px;
+  border-radius: 26px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 440px; /* ปรับให้ห่างจากช่อง Password */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* เอฟเฟกต์เมื่อโฮเวอร์ */
+.login-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ปุ่ม Cancel */
+.cancel-button {
+  width: 300px;
+  height: 55px;
+  border-radius: 26px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  background-color: transparent; /* ไม่มีสีพื้นหลัง */
+  color: #007bff; /* ตัวอักษรเป็นสีฟ้า */
+  border: 2px solid #000000; /* เพิ่มเส้นขอบสีฟ้า */
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 510px; /* ทำให้ห่างจากปุ่ม Login */
+  transition: all 0.3s ease;
+}
+
+/* เอฟเฟกต์เมื่อโฮเวอร์ */
+.cancel-button:hover {
+  background-color: #007bff; /* เปลี่ยนพื้นหลังเป็นสีฟ้าเมื่อโฮเวอร์ */
+  color: white; /* เปลี่ยนตัวอักษรเป็นสีขาว */
+}
+
+
+

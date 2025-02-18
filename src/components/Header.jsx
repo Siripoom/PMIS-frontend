@@ -1,35 +1,18 @@
-import { Breadcrumb, Input, Layout } from "antd";
-import { HomeOutlined, SearchOutlined } from "@ant-design/icons";
-import { useLocation } from "react-router-dom";
+import { Layout, Input } from "antd";
 import "./Header.css";
 
 const { Header } = Layout;
 const { Search } = Input;
 
 const HeaderComponent = () => {
-  const location = useLocation();
-  const pathSnippets = location.pathname.split("/").filter((i) => i);
-
   return (
     <Header className="header-container">
-      {/* Breadcrumbs */}
-      <Breadcrumb className="breadcrumb">
-        {/* <Breadcrumb.Item>สถานีระบายน้ำ</Breadcrumb.Item> */}
-        {pathSnippets.map((snippet, index) => {
-          const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-          return (
-            <Breadcrumb.Item key={url}>
-              {snippet.charAt(0).toUpperCase() + snippet.slice(1)}
-            </Breadcrumb.Item>
-          );
-        })}
-      </Breadcrumb>
+      {/* ชื่อระบบ */}
+      <h1 className="header-title">ระบบบริหารจัดการโครงการ</h1>
 
-      {/* Search Bar */}
+      {/* Search Bar (ไม่มีไอคอนทางซ้าย) */}
       <Search
-        placeholder="ค้นหา..."
-        allowClear
-        prefix={<SearchOutlined />}
+        placeholder="Search"
         className="search-bar"
       />
     </Header>
