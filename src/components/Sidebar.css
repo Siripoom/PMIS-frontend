@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+  font-family: 'DM Sans', sans-serif;
+}
+
 /* Header */
 .sidebar-header {
   display: flex;
@@ -18,7 +24,6 @@
   font-weight: bold;
   color: white;
   margin-top: -12px;
-
 }
 
 .nav-item {
@@ -32,26 +37,26 @@
 
 /* ปรับขนาดไอคอนใน nav-item */
 .nav-item svg {
-  font-size: 30px; /* กำหนดขนาดไอคอนที่ต้องการ */
-  margin-right: 20px; /* เว้นระยะห่างระหว่างไอคอนและข้อความ */
+  font-size: 30px;
+  margin-right: 20px;
 }
 
 .nav-item:hover {
-  background: #1e90ff; /* เปลี่ยนสีเมื่อชี้เมาส์ */
+  background: #1e90ff;
   color: white;
 }
 
 .active {
-  background: #1e90ff; /* เปลี่ยนสีเมื่อถูกเลือก */
+  background: #1e90ff;
   color: white;
 }
 .sidebar {
-  background-color: #001529; /* ปรับพื้นหลัง Sidebar */
-  padding: 20px; /* เพิ่ม padding ให้กับ Sidebar */
-  width: 321px; /* เพิ่มความกว้างของ Sidebar */
-  height: 100vh; /* ให้ Sidebar ยืดเต็มหน้าจอ */
-  position: fixed; /* ติดตั้ง Sidebar ไว้ที่ตำแหน่งคงที่ */
-  left: 0; /* ตั้งค่าตำแหน่งให้ติดขอบซ้าย */
+  background-color: #001529;
+  padding: 20px;
+  width: 321px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
 }
 
 .user-profile {
@@ -59,9 +64,9 @@
   align-items: center;
   padding: 20px;
   color: white;
-  background: rgba(255, 255, 255, 0.1); /* ให้ดูเหมือนปุ่ม */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
-  cursor: default; /* ปิดการคลิก */
+  cursor: default;
 }
 
 .user-icon {
@@ -76,3 +81,50 @@
   white-space: nowrap;
 }
 
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+    padding: 15px;
+  }
+
+  .sidebar-title {
+    font-size: 36px;
+  }
+
+  .logo {
+    width: 48px;
+    height: 48px;
+    margin-left: 15px;
+  }
+
+  .nav-item {
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+    padding: 10px;
+  }
+
+  .sidebar-title {
+    display: none;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .nav-item svg {
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .sidebar {
+    display: none;
+  }
+}

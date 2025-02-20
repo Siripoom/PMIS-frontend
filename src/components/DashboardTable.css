@@ -1,38 +1,223 @@
-  /* พื้นหลังของหน้า Dashboard */
-  .dashboard-container {
-    background-color: #D9D9D9;
-    min-height: 100vh;
-    padding: 20px;
-    margin: 0;
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+/* ใช้ฟอนต์ที่นำเข้า */
+* {
+  font-family: 'DM Sans', sans-serif;
+}
+/* พื้นหลังของหน้า Dashboard */
+.dashboard-container {
+  background-color: #D9D9D9;
+  min-height: 100vh;
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-start; /* จัดให้อยู่ชิดซ้ายติดกับ Sidebar */
+  align-items: center;
+  
+}
+
+/* กล่องหลัก */
+.centered-box {
+  background-color: white;
+  width: calc(100% - 250px); /* ลดระยะให้ชิด Sidebar และเหมาะสม */
+  max-width: 1600px;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 300px; /* ชิด Sidebar */
+  margin-top: 150px;
+}
+.font-title{
+  font-size: 20px;
+  font-display: bold;
+  color: #486284;
+}
+.title-box{
+  font-size: 20px;
+  font-display: bold;
+  margin-left: -400px;
+  color: #486284;
+}
+/* แถวปุ่ม */
+.button-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 20px;
+}
+
+/* กล่องปุ่ม */
+.dashboard-card {
+  background-color: #A8B8D8;
+  padding: 30px;
+  text-align: center;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 250px;
+  height: 150px;
+}
+
+/* ปุ่ม */
+.dashboard-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.dashboard-button::after {
+  content: '\1F517';
+  display: block;
+  font-size: 28px;
+  margin-top: 5px;
+}
+
+/* กล่องใหม่ด้านซ้าย */
+.status-box {
+  background-color: white;
+  width: 750px;
+  height: 381px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 200px;
+}
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .button-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .button-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-card {
+    width: 200px;
+    height: 120px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .button-row {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .dashboard-card {
     width: 100%;
-    box-sizing: border-box;
-
-    /* ใช้ Flexbox จัดให้อยู่ตรงกลาง */
-    display: flex;
-    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
-    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+    height: auto;
   }
 
-  /* กล่องหลัก */
-  .centered-box {
-    background-color: white;
-    width: 1300px;  /* ความกว้างของกล่อง */
-    height: 650px; /* ความสูงของกล่อง */
-    border-radius: 20px; /* ทำให้มุมมน */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* เพิ่มเงา */
-    width: calc(1540px -  100%);  /* ขยายออกทั้งซ้ายและขวา โดยเว้นขอบ 50px แต่ละข้าง */
-    margin-left: -720px;
-    /* จัดให้อยู่ตรงกลาง */
-    justify-items: center;
-    justify-content: center;
-    align-items: center;
-    margin-top: 100px;
+}
+/* กำหนดตำแหน่งและการจัดการแสดงผลของ Pie Chart */
+.pie-chart-container {
+  display: flex;
+  justify-content: center; /* จัดให้อยู่กลาง */
+  align-items: center; /* จัดให้อยู่กลางในแนวตั้ง */
+  width: -200px; /* ใช้ความกว้างเต็ม */
+  margin-top: -30px; /* ระยะห่างจากด้านบน */
+  margin-left: -200px;
+}
+
+.pie-chart {
+  max-width: 300px; /* กำหนดขนาดสูงสุดของกราฟ */
+  height: auto; /* ปรับความสูงอัตโนมัติ */
+}
+
+/* ถ้าต้องการเพิ่มการตอบสนอง (responsive) สำหรับหน้าจอที่เล็กลง */
+@media screen and (max-width: 768px) {
+  .pie-chart {
+    max-width: 250px; /* ลดขนาดกราฟเมื่อขนาดหน้าจอเล็กลง */
   }
-/* ข้อความใน centered-box */
-.dashboard-title {
+}
+
+@media screen and (max-width: 480px) {
+  .pie-chart {
+    max-width: 200px; /* ลดขนาดกราฟในหน้าจอมือถือ */
+  }
+
+}
+
+/* ใช้ Flexbox เพื่อจัดเรียงกราฟและตาราง */
+.pie-chart-text {
+  display: flex; /* ใช้ Flexbox เพื่อจัดตำแหน่งกราฟและตารางให้อยู่ข้างกัน */
+  justify-content: space-between; /* จัดให้กราฟอยู่ทางซ้ายและตารางทางขวา */
+  align-items: center;
+  width: 100%;
+}
+
+/* กราฟ Pie Chart */
+.pie-chart-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ตารางที่อยู่ขวาของกราฟ */
+.status-text {
+  flex: 1;
+  margin-left: 20px;
+}
+
+/* ตาราง */
+.status-tb {
+  width: 400px;
+  border-collapse: collapse; /* เส้นขอบไม่ทับกัน */
+  margin-top: 20px;
+  margin-right: -200px;
+}
+
+.status-tb th, .status-tb td {
+  padding: 10px;
+  text-align: center;
+  
+}
+
+.status-tb th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.status-box {
+  padding: 20px;
+}
+
+.title-box {
   font-size: 20px;
   font-weight: bold;
   color: #486284;
-  text-align: center;
-  margin-top: -50px;
+  margin-bottom: 20px;
+}
+
+/* ปรับขนาดตารางให้เหมาะสมกับขนาดหน้าจอ */
+@media screen and (max-width: 768px) {
+  .status-tb {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .status-tb {
+    font-size: 12px;
+  }
 }

@@ -1,18 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import "tailwindcss";
+
+  /* ใช้ฟอนต์หลักสำหรับทุกองครรษ์ */
+  * {
+    font-family: 'DM Sans', sans-serif;
+  }
 /* Header */
 .header-container {
-  position: fixed; /* ทำให้ Header อยู่ด้านบนสุด */
-  top: 0; /* ชิดขอบบน */
-  left: 220px; /* เว้นระยะให้ Sidebar (ต้องตรงกับ Sidebar width) */
-  width: calc(100% - 220px); /* ปรับขนาดให้พอดีกับหน้าจอ */
-  z-index: 1000; /* ให้ Header อยู่ด้านหน้า */
+  position: fixed;
+  top: 0;
+  left: 220px;
+  width: calc(100% - 220px);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #001529;
-  padding: 20px 30px; /* ปรับ padding ด้านซ้ายขวาให้พอดี */
+  padding: 20px 30px;
   height: 150px;
-  box-sizing: border-box; 
-  margin-left: 101px; /* ลดระยะห่างจากขอบซ้าย */
+  box-sizing: border-box;
+  margin-left: 101px;
 }
 
 /* ชื่อ Header */
@@ -22,26 +29,23 @@
   font-weight: 700;
   color: white;
   margin: 0;
-  margin-left: 30px; /* ลดระยะห่างจากขอบซ้าย */
+  margin-left: 30px;
 }
 
 /* ปรับ Search Bar ให้ชิดขวา */
 .search-bar {
-  display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่กลาง */
-  align-items: center; /* จัดให้ข้อความอยู่กึ่งกลางแนวตั้ง */
-  justify-content: center; /* จัดให้ข้อความอยู่กึ่งกลางแนวนอน */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 422px;
   height: 53px;
   border-radius: 50px;
-  
-  /* ขยับกล่องค้นหาไปชิดขวา */
-  margin-left: auto; 
-  margin-right: 100px; /* ปรับระยะห่างจากขอบขวา */
-
+  margin-left: auto;
+  margin-right: 100px;
   background-color: white;
-  border: none !important;  /* ลบเส้นขอบ */
-  box-shadow: none !important; /* ลบเงาหรือกรอบ */
-  outline: none !important; /* ลบขอบที่เกิดเมื่อคลิก */
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
   padding: 10px 20px;
   font-size: 18px;
 }
@@ -61,9 +65,9 @@
 .search-bar input {
   height: 100%;
   width: 100%;
-  border: none !important;  /* ลบเส้นขอบ */
-  outline: none !important; /* ลบขอบที่เกิดเมื่อคลิก */
-  box-shadow: none !important; /* ลบเงาหรือกรอบ */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   font-size: 18px;
   background: transparent;
   text-align: center;
@@ -82,4 +86,55 @@
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .header-container {
+    left: 0;
+    width: 100%;
+    height: 120px;
+    padding: 15px 20px;
+  }
+
+  .header-title {
+    font-size: 32px;
+  }
+
+  .search-bar {
+    width: 350px;
+    height: 45px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .header-container {
+    height: 100px;
+    padding: 10px;
+  }
+
+  .header-title {
+    font-size: 24px;
+  }
+
+  .search-bar {
+    width: 250px;
+    height: 40px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .header-container {
+    height: 80px;
+    padding: 10px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .search-bar {
+    width: 200px;
+    height: 35px;
+  }
 }

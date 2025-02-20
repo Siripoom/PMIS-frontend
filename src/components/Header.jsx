@@ -8,7 +8,7 @@ const HeaderComponent = () => {
   return (
     <Header className="header-container">
       {/* ชื่อระบบ */}
-      <h1 className="header-title">ระบบบริหารจัดการโครงการ</h1>
+      <h1 className="header-title" >ระบบบริหารจัดการโครงการ</h1>
 
       {/* Search Bar (ไม่มีไอคอนทางซ้าย) */}
       <Search
