@@ -1,20 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./styles/App.css";
-import { Stations } from "./pages/admin/Stations";
-import Login from "./pages/Login";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login"; // นำเข้าไฟล์ Login
 
-function App() {
+const App = () => {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          {/* Add routes here */}
-          <Route path="/" element={<Login />} />
-          <Route path="/admin/station/info" element={<Stations />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+    <Router>
+      <Routes>
+        <Route path="Login" element={<Login />} /> {/* หน้า Login */}
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
