@@ -1,0 +1,89 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  width: 220px;
+  height: 100vh;
+  background-color: #0b1622;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+  gap: 10px; /* เว้นระยะห่างระหว่างโลโก้กับข้อความ */
+  margin-bottom: 30px;
+}
+
+.logo-icon {
+  width: 50px; /* ลดขนาดโลโก้ให้เหมาะสม */
+  height: 50px;
+  border-radius: 50%;
+}
+
+.logo-text {
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.sidebar-nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* ทำให้เมนูขยายเต็มพื้นที่ที่เหลือ */
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #b0c4de;
+  font-size: 16px;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item span {
+  margin-left: 15px;
+}
+
+.nav-item.active {
+  background-color: #007bff;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.nav-item.active span {
+  font-weight: bold;
+}
+
+.nav-item svg {
+  font-size: 20px;
+  color: inherit;
+}
+
+/* สไตล์ปุ่ม Log Out ให้แยกออกมาด้านล่าง */
+.logout {
+  margin-top: auto; /* ให้เมนู Log Out อยู่ด้านล่างสุด */
+  color: #ff4d4f; /* สีแดง */
+}
+
+.logout:hover {
+  background-color: rgba(255, 77, 79, 0.1);
+}
+
+.logout.active {
+  background-color: #ff4d4f;
+  color: #ffffff;
+}

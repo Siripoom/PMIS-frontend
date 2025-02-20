@@ -1,0 +1,104 @@
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #0b1622; /* สีเดียวกับ Sidebar */
+  border-bottom: 1px solid #1c2635;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column; /* เรียงหัวข้อกับ Breadcrumb เป็นแนวตั้ง */
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: white; /* สีขาว */
+  margin-bottom: 5px; /* เว้นระยะห่างระหว่าง Title กับ Breadcrumb */
+}
+
+.breadcrumb {
+  color: white;
+}
+
+.breadcrumb a {
+  color: white;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: #007bff;
+}
+
+/* ทำให้ข้อความใน Breadcrumb เป็นสีขาว */
+.breadcrumb .ant-breadcrumb-link,
+.breadcrumb .ant-breadcrumb-separator {
+  color: white !important;
+}
+
+.header-center {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar {
+  width: 300px;
+  background-color: #ffffff;
+  border-radius: 20px;
+}
+
+.search-bar input {
+  background-color: #ffffff;
+  color: black;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+}
+
+.search-bar input::placeholder {
+  color: #888;
+}
+
+.search-bar .ant-input-prefix {
+  margin-right: 8px;
+  color: #888;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* เพิ่มช่องว่างระหว่างไอคอนแจ้งเตือนและโปรไฟล์ */
+}
+
+/* ไอคอนแจ้งเตือน */
+.notification-icon {
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+}
+
+.notification-icon .anticon {
+  color: white !important; /* บังคับให้ไอคอนเป็นสีขาว */
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user-details {
+  margin-left: 10px;
+}
+
+.user-name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
