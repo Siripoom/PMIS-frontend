@@ -21,7 +21,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
-} from "../../api/ProjectManage"; // ✅ ใช้ชื่อที่คุณตั้งไว้
+} from "../../api/ProjectManage";
 
 const { Sider, Content } = Layout;
 const { Option } = Select;
@@ -44,7 +44,11 @@ const ProjectManagement = () => {
       console.log("📢 Fetching projects from API...");
       const data = await getAllProjects();
       console.log("✅ API Response:", data);
-      setProjects(data);
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        console.error("❌ API ไม่ส่งข้อมูลโครงการในรูปแบบที่คาดหวัง:", data);
+      }
     } catch (error) {
       console.error("❌ Error fetching projects:", error);
       message.error("โหลดข้อมูลโครงการล้มเหลว");
@@ -54,13 +58,11 @@ const ProjectManagement = () => {
   };
 
   const showModal = () => {
-    console.log("📢 กำลังเปิด Modal เพิ่มโครงการ...");
-    form.resetFields(); // ✅ รีเซ็ตฟอร์มก่อนแสดง Modal
-    setIsModalVisible(true); // ✅ เปิด Modal
+    form.resetFields();
+    setIsModalVisible(true);
   };
 
   const showEditModal = (record) => {
-    console.log("📢 กำลังเปิด Modal แก้ไขโครงการ...");
     setEditData(record);
     form.setFieldsValue({
       project_name: record.project_name,
@@ -73,7 +75,6 @@ const ProjectManagement = () => {
   };
 
   const handleCancel = () => {
-    console.log("📢 ปิด Modal");
     setIsModalVisible(false);
     setIsEditModalVisible(false);
   };
@@ -81,26 +82,54 @@ const ProjectManagement = () => {
   const handleAddProject = async (values) => {
     try {
       console.log("📢 Creating project:", values);
-      await createProject(values);
-      message.success("เพิ่มโครงการสำเร็จ");
-      fetchProjects();
-      handleCancel();
+
+      if (!values.project_name || !values.budget || !values.status) {
+        message.error("กรุณากรอกข้อมูลให้ครบถ้วน!");
+        return;
+      }
+
+      const newProject = await createProject(values);
+      console.log("✅ Project Created:", newProject);
+
+      if (newProject) {
+        setProjects((prevProjects) => [...prevProjects, newProject]); // ✅ อัปเดต state ทันที
+        message.success("เพิ่มโครงการสำเร็จ!");
+        handleCancel();
+      } else {
+        message.error("เกิดข้อผิดพลาดในการเพิ่มโครงการ");
+      }
     } catch (error) {
       console.error("❌ Error adding project:", error);
-      message.error("เพิ่มโครงการไม่สำเร็จ");
+      message.error(
+        error.response?.data?.error || "เกิดข้อผิดพลาดในการเพิ่มโครงการ"
+      );
     }
   };
 
   const handleEditProject = async (values) => {
     try {
       console.log("📢 Updating project:", editData.project_id, values);
-      await updateProject(editData.project_id, values);
-      message.success("แก้ไขโครงการสำเร็จ");
-      fetchProjects();
-      handleCancel();
+      const updatedProject = await updateProject(editData.project_id, values);
+      console.log("✅ Project Updated:", updatedProject);
+
+      if (updatedProject) {
+        setProjects((prevProjects) =>
+          prevProjects.map((project) =>
+            project.project_id === updatedProject.project_id
+              ? updatedProject
+              : project
+          )
+        );
+        message.success("แก้ไขโครงการสำเร็จ!");
+        handleCancel();
+      } else {
+        message.error("เกิดข้อผิดพลาดในการแก้ไขโครงการ");
+      }
     } catch (error) {
       console.error("❌ Error editing project:", error);
-      message.error("แก้ไขโครงการไม่สำเร็จ");
+      message.error(
+        error.response?.data?.error || "เกิดข้อผิดพลาดในการแก้ไขโครงการ"
+      );
     }
   };
 
@@ -108,11 +137,15 @@ const ProjectManagement = () => {
     try {
       console.log("📢 Deleting project ID:", id);
       await deleteProject(id);
-      message.success("ลบโครงการสำเร็จ");
-      fetchProjects();
+      setProjects((prevProjects) =>
+        prevProjects.filter((project) => project.project_id !== id)
+      );
+      message.success("ลบโครงการสำเร็จ!");
     } catch (error) {
       console.error("❌ Error deleting project:", error);
-      message.error("ลบโครงการไม่สำเร็จ");
+      message.error(
+        error.response?.data?.error || "เกิดข้อผิดพลาดในการลบโครงการ"
+      );
     }
   };
 
@@ -122,13 +155,25 @@ const ProjectManagement = () => {
     { title: "รายละเอียด", dataIndex: "description" },
     { title: "งบประมาณ", dataIndex: "budget" },
     { title: "สถานะ", dataIndex: "status" },
-    { title: "วันเริ่มต้น", dataIndex: "start_date", render: (text) => (text ? text.split("T")[0] : "") },
+    {
+      title: "วันเริ่มต้น",
+      dataIndex: "start_date",
+      render: (text) => (text ? text.split("T")[0] : ""),
+    },
     {
       title: "จัดการ",
       render: (_, record) => (
         <div className="flex space-x-2">
-          <Button type="text" icon={<EditOutlined />} onClick={() => showEditModal(record)} />
-          <Button type="text" icon={<DeleteOutlined />} onClick={() => handleDeleteProject(record.project_id)} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => showEditModal(record)}
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteProject(record.project_id)}
+          />
         </div>
       ),
     },
@@ -136,17 +181,20 @@ const ProjectManagement = () => {
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
-      <Sider width={220}><Sidebar /></Sider>
+      <Sider width={220}>
+        <Sidebar />
+      </Sider>
       <Layout>
         <Header title="Project Management" />
         <Content className="p-6 bg-gray-100">
           <div className="bg-white p-4 shadow-md rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">การจัดการโครงการ</h2>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => {
-                console.log("📢 กดปุ่มเพิ่มโครงการแล้ว!");
-                showModal();
-              }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={showModal}
+              >
                 เพิ่มโครงการ
               </Button>
             </div>
@@ -156,28 +204,39 @@ const ProjectManagement = () => {
               <Table
                 columns={columns}
                 dataSource={projects}
-                rowKey="project_id" // ✅ ป้องกัน Key Error
+                rowKey="project_id"
                 pagination={{ pageSize: 5 }}
               />
             )}
           </div>
         </Content>
 
-        {/* Modal for Adding and Editing Project */}
         <Modal
           title={isEditModalVisible ? "แก้ไขโครงการ" : "เพิ่มโครงการ"}
-          open={isModalVisible} 
+          open={isModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
-          <Form layout="vertical" form={form} onFinish={isEditModalVisible ? handleEditProject : handleAddProject}>
-            <Form.Item label="ชื่อโครงการ" name="project_name" rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}>
+          <Form
+            layout="vertical"
+            form={form}
+            onFinish={isEditModalVisible ? handleEditProject : handleAddProject}
+          >
+            <Form.Item
+              label="ชื่อโครงการ"
+              name="project_name"
+              rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}
+            >
               <Input placeholder="ระบุชื่อโครงการ" />
             </Form.Item>
             <Form.Item label="รายละเอียด" name="description">
               <Input.TextArea placeholder="รายละเอียดโครงการ" />
             </Form.Item>
-            <Form.Item label="งบประมาณ" name="budget" rules={[{ required: true, message: "กรุณาระบุงบประมาณ" }]}>
+            <Form.Item
+              label="งบประมาณ"
+              name="budget"
+              rules={[{ required: true, message: "กรุณาระบุงบประมาณ" }]}
+            >
               <Input placeholder="งบประมาณ" type="number" />
             </Form.Item>
             <Form.Item label="สถานะ" name="status">
@@ -192,8 +251,9 @@ const ProjectManagement = () => {
               <Input type="date" />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit">บันทึก</Button>
-              <Button className="ml-2" onClick={handleCancel}>ยกเลิก</Button>
+              <Button type="primary" htmlType="submit">
+                บันทึก
+              </Button>
             </Form.Item>
           </Form>
         </Modal>
