@@ -15,7 +15,7 @@
     "@syncfusion/ej2-react-gantt": "^28.2.6",
     "@tailwindcss/vite": "^4.0.0",
     "antd": "^5.23.2",
-    "axios": "^1.7.9",
+    "axios": "^1.8.1",
     "frappe-gantt": "^1.0.3",
     "moment": "^2.30.1",
     "react": "^18.3.1",

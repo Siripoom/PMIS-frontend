@@ -3,6 +3,7 @@ import { Layout } from "antd";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import "../../styles/Report.css";
+import Footer from "../../components/Footer/Footer";
 
 const { Sider, Content } = Layout;
 
@@ -18,8 +19,10 @@ const Report = () => {
         <Header title="Report" />
 
         <Content className="report-container"></Content>
+        <Footer />
       </Layout>
     </Layout>
+
   );
 };
 

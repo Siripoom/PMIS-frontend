@@ -22,57 +22,49 @@ const Sidebar = () => {
       <nav className="sidebar-nav">
         <NavLink
           to="/admin/dashboard"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <DashboardOutlined /> <span>Dashboard</span>
         </NavLink>
         <NavLink
           to="/admin/project-management"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <EditOutlined /> <span>Project Management</span>
         </NavLink>
         <NavLink
           to="/admin/project-progress"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <TableOutlined /> <span>Project Progress</span>
         </NavLink>
         <NavLink
           to="/admin/resource-management"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <FileTextOutlined /> <span>Resource Management</span>
         </NavLink>
         <NavLink
           to="/admin/budget"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <CheckCircleOutlined /> <span>Budget</span>
         </NavLink>
         <NavLink
           to="/admin/report"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <ExclamationCircleOutlined /> <span>Report</span>
         </NavLink>
-        {/* <NavLink
+        <NavLink
           to="/admin/notification"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <BellOutlined /> <span>Notification</span>
-        </NavLink> */}
+        </NavLink>
         <NavLink
           to="/admin/user-management"
-          activeClassName="active"
-          className="nav-item"
+          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
         >
           <UserOutlined /> <span>User Management</span>
         </NavLink>

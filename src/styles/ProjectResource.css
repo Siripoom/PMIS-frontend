@@ -1,6 +1,71 @@
 .projectResource-container {
   flex: 1;
   padding: 20px;
-  background-color: #f4f5f7; /* Background color for content area */
+  background-color: #f4f5f7;
   overflow-y: auto;
+}
+
+/* ✅ เพิ่มสไตล์ของหัวข้อ "การจัดการโครงการ" */
+.projectResource-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.projectResource-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+/* ส่วนหัว */
+.projectResource-header {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: #e8f4ff;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* ตาราง */
+.projectResource-table .ant-table {
+  border-radius: 10px;
+}
+
+/* ปุ่มลบและแก้ไข */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* จุดสถานะ */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.gray {
+  background-color: gray;
+}
+
+.status-dot.blue {
+  background-color: blue;
+}
+
+.status-dot.red {
+  background-color: red;
+}
+
+/* Pagination */
+.ant-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }

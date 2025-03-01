@@ -1,6 +1,8 @@
+/* Sidebar คงที่ ไม่เปลี่ยนขนาดและไม่ขยับ */
 .sidebar {
-  position: sticky;
+  position: fixed; /* ทำให้ Sidebar อยู่คงที่ */
   top: 0;
+  left: 0;
   width: 220px;
   height: 100vh;
   background-color: #0b1622;
@@ -9,6 +11,7 @@
   flex-direction: column;
   align-items: center;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
 }
 
 .sidebar-logo {

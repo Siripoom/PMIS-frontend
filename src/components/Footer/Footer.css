@@ -1,0 +1,166 @@
+/* Footer Container */
+.footer {
+  background-color: #D3DCE7;
+  color: #4a4a4a;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+/* Logo and Vision Section */
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* จัดข้อความชิดซ้าย */
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-logo img {
+  height: 40px;
+}
+
+.footer-brand {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  
+}
+
+/* ปรับให้ข้อความเหมือนในภาพ */
+.footer-text {
+  font-size: 16px;
+  color: #4a4a4a;
+  text-align: left; /* ชิดซ้าย */
+  max-width: 300px; /* จำกัดความกว้าง */
+  margin: 10px 0 0; /* ปรับระยะห่างจากโลโก้ */
+}
+
+/* Social Media */
+.footer-socials {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-icon {
+  font-size: 18px;
+  color: #4a4a4a;
+  transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+  color: #111;
+}
+
+/* Footer Sections */
+.footer-section {
+  text-align: left;
+}
+
+.footer-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.footer-list {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-list li {
+  margin-bottom: 6px;
+}
+
+.footer-list a {
+  text-decoration: none;
+  color: #4a4a4a;
+  transition: color 0.3s ease;
+}
+
+.footer-list a:hover {
+  color: #111;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+  padding-top: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer-links {
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap; /* ป้องกันลิงก์ล้น */
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #4a4a4a;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #111;
+}
+
+/* Logo Responsive */
+.logo-icon1 {
+  width: 50px;
+  height: auto;
+  display: block;
+  margin-left: -1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr; /* ให้ footer เป็นคอลัมน์เดียว */
+    text-align: center;
+  }
+
+  .footer-logo {
+    flex-direction: column; /* จัดให้โลโก้และชื่อแบรนด์เรียงแนวตั้ง */
+    align-items: center;
+  }
+
+  .footer-brand {
+    font-size: 28px;
+  }
+
+  .footer-text {
+    font-size: 14px;
+    text-align: center;
+    max-width: 100%; /* ให้ข้อความอยู่กึ่งกลาง */
+  }
+
+  .footer-section {
+    text-align: center;
+  }
+
+  .footer-links {
+    flex-direction: column; /* แสดงลิงก์เป็นแนวตั้ง */
+    gap: 5px;
+  }
+
+  .logo-icon1 {
+    width: 40px;
+  }
+}

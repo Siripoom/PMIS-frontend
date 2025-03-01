@@ -3,6 +3,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import BigCalendar from "../../components/BigCalendar"; // Import Calendar Component
 import "../../styles/ProjectProgress.css";
+import Footer from "../../components/Footer/Footer";  //Footer สุดอ้วน
 
 const { Sider, Content } = Layout;
 
@@ -65,6 +66,7 @@ const ProjectProgress = () => {
             />
           </Card>
         </Content>
+        <Footer />
       </Layout>
     </Layout>
   );

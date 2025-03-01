@@ -3,7 +3,7 @@ import { Layout } from "antd";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import "../../styles/Budget.css";
-
+import Footer from "../../components/Footer/Footer";
 const { Sider, Content } = Layout;
 
 const Budget = () => {
@@ -18,6 +18,7 @@ const Budget = () => {
         <Header title="Budget" />
 
         <Content className="budget-container"></Content>
+        <Footer />
       </Layout>
     </Layout>
   );

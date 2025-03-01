@@ -4,6 +4,7 @@ import Header from "../../components/Header/Header";
 import "../../styles/Dashboard.css";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import Footer from "../../components/Footer/Footer";
 const { Sider, Content } = Layout;
 
 const projects = [
@@ -209,6 +210,8 @@ const Dashboard = () => {
             </Row>
           </div>
         </Content>
+        {/* Footer สุดน่ารักของเรา */}
+        <Footer /> 
       </Layout>
     </Layout>
   );

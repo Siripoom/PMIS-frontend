@@ -7,6 +7,7 @@ import ProjectProgress from "./pages/admin/ProjectProgress";
 import ResourceManagement from "./pages/admin/ProjectResource";
 import Budget from "./pages/admin/Budget";
 import Report from "./pages/admin/Report";
+import Notification from "./pages/admin/Notification";
 import UserManagement from "./pages/admin/UserManagement";
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         />
         <Route path="/admin/budget" element={<Budget />} />
         <Route path="/admin/report" element={<Report />} />
+        <Route path="/admin/notification" element={<Notification />} />
         <Route path="/admin/user-management" element={<UserManagement />} />
       </Routes>
     </Router>

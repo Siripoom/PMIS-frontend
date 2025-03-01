@@ -44,12 +44,15 @@
   flex-grow: 1;
   display: flex;
   justify-content: center;
+  align-items: center; /* ทำให้ search-bar อยู่กึ่งกลาง */
 }
 
 .search-bar {
-  width: 300px;
+  width: 100%;
+  max-width: 300px; /* จำกัดความกว้างสูงสุด */
   background-color: #ffffff;
   border-radius: 20px;
+  display: flex;
 }
 
 .search-bar input {
@@ -101,4 +104,100 @@
   font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .header-left {
+    width: 100%;
+  }
+
+  .header-center {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+
+  .search-bar {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0.5rem;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .header-center {
+    order: 2;
+    margin-top: 10px;
+  }
+
+  .search-bar {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .header-right {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .notification-icon {
+    font-size: 18px;
+  }
+
+  .user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .header-left {
+    width: 100%;
+  }
+
+  .header-center {
+    width: 100%;
+  }
+
+  .search-bar {
+    max-width: 100%;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .user-details {
+    display: none;
+  }
 }
