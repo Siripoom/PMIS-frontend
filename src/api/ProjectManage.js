@@ -1,47 +1,36 @@
 import axios from "axios";
 
-const API_URL = "https://a3e9-1-47-155-199.ngrok-free.app/api/projects"; 
+const API_URL = "https://bbe2-1-47-155-199.ngrok-free.app/api/projects"; // 🛑 แก้เป็น URL ของคุณ
 
-// ✅ ดึงข้อมูลโครงการทั้งหมด (ลบ getAuthHeader ออก)
+// ✅ ดึงข้อมูลโครงการทั้งหมด
 export const getAllProjects = async () => {
   try {
-    const response = await axios.get(API_URL); 
+    const response = await axios.get(API_URL);
     return response.data.projects;
   } catch (error) {
-    console.error("❌ Error fetching projects:", error.response?.data || error.message);
+    console.error("❌ Error fetching projects:", error);
     throw error;
   }
 };
 
-// ✅ สร้างโครงการใหม่
+// ✅ เพิ่มโครงการ
 export const createProject = async (data) => {
   try {
-    const response = await axios.post(API_URL, data); 
+    const response = await axios.post(API_URL, data);
     return response.data.project;
   } catch (error) {
-    console.error("❌ Error adding project:", error.response?.data || error.message);
+    console.error("❌ Error adding project:", error);
     throw error;
   }
 };
 
-// ✅ ดึงโครงการตาม ID
-export const getProjectById = async (id) => {
-  try {
-    const response = await axios.get(`${API_URL}/${id}`); 
-    return response.data.project;
-  } catch (error) {
-    console.error("❌ Error fetching project:", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// ✅ อัปเดตโครงการ
+// ✅ แก้ไขโครงการ
 export const updateProject = async (id, data) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, data); 
+    const response = await axios.put(`${API_URL}/${id}`, data);
     return response.data.project;
   } catch (error) {
-    console.error("❌ Error updating project:", error.response?.data || error.message);
+    console.error("❌ Error updating project:", error);
     throw error;
   }
 };
@@ -49,10 +38,10 @@ export const updateProject = async (id, data) => {
 // ✅ ลบโครงการ
 export const deleteProject = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/${id}`); 
+    const response = await axios.delete(`${API_URL}/${id}`);
     return response.data;
   } catch (error) {
-    console.error("❌ Error deleting project:", error.response?.data || error.message);
+    console.error("❌ Error deleting project:", error);
     throw error;
   }
 };
