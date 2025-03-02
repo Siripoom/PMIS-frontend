@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://593a-1-47-155-199.ngrok-free.app/api/projects";
+const API_URL = "https://43bc-1-47-155-199.ngrok-free.app/api/projects";
 
 // ✅ ดึงข้อมูลโครงการทั้งหมด
 export const getAllProjects = async () => {
