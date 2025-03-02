@@ -35,6 +35,7 @@ const ProjectManagement = () => {
   const [form] = Form.useForm();
 
   useEffect(() => {
+    console.log("🔄 useEffect triggered, calling fetchProjects()");
     fetchProjects();
   }, []);
 
@@ -43,7 +44,16 @@ const ProjectManagement = () => {
     try {
       console.log("📢 Fetching projects from API...");
       const data = await getAllProjects();
-      console.log("✅ API Response:", data);
+  
+      // ✅ เพิ่ม console.log() เพื่อดูข้อมูลที่ได้รับ
+      console.log("✅ Data received from API:", data);
+  
+      if (!data || !Array.isArray(data)) {
+        console.error("❌ Data received is not an array:", data);
+        message.error("โหลดข้อมูลโครงการล้มเหลว");
+        return;
+      }
+  
       setProjects(data);
     } catch (error) {
       console.error("❌ Error fetching projects:", error);
@@ -52,6 +62,8 @@ const ProjectManagement = () => {
       setLoading(false);
     }
   };
+  
+
 
   const showModal = () => {
     form.resetFields();
@@ -83,34 +95,48 @@ const ProjectManagement = () => {
 
   const handleAddProject = async (values) => {
     try {
-      console.log("📢 Creating project:", values, "📂 Files:", fileList);
+      console.log("📢 Creating project:", values);
       const newProject = await createProject(values);
-      setProjects((prevProjects) => [...prevProjects, newProject]);
+      console.log("✅ New Project Created:", newProject);
+  
+      if (!newProject || !newProject.project_id) {
+        throw new Error("❌ API ไม่ส่งข้อมูลโครงการกลับมา");
+      }
+  
       message.success("เพิ่มโครงการสำเร็จ!");
       handleCancel();
+      fetchProjects(); // ✅ รีโหลดข้อมูลใหม่
     } catch (error) {
       console.error("❌ Error adding project:", error);
       message.error("เพิ่มโครงการไม่สำเร็จ");
     }
   };
+
+
+
+
+
+
   const handleEditProject = async (values) => {
     try {
       console.log("📢 Updating project:", modalState.data.project_id, values);
       const updatedProject = await updateProject(modalState.data.project_id, values);
-      
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.project_id === updatedProject.project_id ? updatedProject : project
-        )
-      );
-
+  
+      if (!updatedProject || !updatedProject.project_id) {
+        throw new Error("❌ API ไม่ส่งข้อมูลโครงการที่อัปเดตกลับมา");
+      }
+  
       message.success("แก้ไขโครงการสำเร็จ!");
       handleCancel();
+      fetchProjects(); // ✅ รีโหลดข้อมูลใหม่
     } catch (error) {
       console.error("❌ Error editing project:", error);
       message.error("แก้ไขโครงการไม่สำเร็จ");
     }
   };
+
+  
+
   const handleFileChange = ({ fileList }) => {
     console.log("📂 อัปโหลดไฟล์:", fileList);
     setFileList(fileList);
@@ -176,13 +202,15 @@ const handleDeleteProject = async (id) => {
   try {
     console.log("📢 Deleting project ID:", id);
     await deleteProject(id);
-    setProjects((prevProjects) => prevProjects.filter((project) => project.project_id !== id));
+
     message.success("ลบโครงการสำเร็จ!");
+    fetchProjects(); // ✅ รีโหลดข้อมูลใหม่
   } catch (error) {
     console.error("❌ Error deleting project:", error);
     message.error("ลบโครงการไม่สำเร็จ");
   }
 };
+
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>

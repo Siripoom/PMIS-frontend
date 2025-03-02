@@ -1,24 +1,44 @@
-import axios from "axios";
+  import axios from "axios";
 
-const API_URL = "https://43bc-1-47-155-199.ngrok-free.app/api/projects";
+  const API_URL = "https://08b2-1-47-155-199.ngrok-free.app/api/projects";
 
-// ✅ ดึงข้อมูลโครงการทั้งหมด
-export const getAllProjects = async () => {
-  try {
-    const response = await axios.get(API_URL);
-    console.log("✅ Raw API Response:", response.data); // ตรวจสอบค่าที่ API ตอบกลับ
-
-    if (!response.data || !Array.isArray(response.data.projects)) {
-      console.error("❌ API ไม่ส่งข้อมูลโครงการในรูปแบบที่คาดหวัง:", response.data);
+  // ✅ ดึงข้อมูลโครงการทั้งหมด
+  export const getAllProjects = async () => {
+    try {
+      console.log("📢 Calling API:", API_URL);
+  
+      const response = await axios.get(API_URL, {
+        headers: {
+          "ngrok-skip-browser-warning": "skip-browser-warning",
+        }
+      });
+  
+      console.log("✅ API Response (Raw Data):", response.data);
+  
+      if (!response.data) {
+        console.error("❌ API ส่งข้อมูลเป็น `undefined` หรือ `null`:", response);
+        return [];
+      }
+  
+      // ✅ รองรับโครงสร้างที่แตกต่างกัน
+      if (Array.isArray(response.data.projects)) {
+        return response.data.projects; // ✅ ใช้ได้เลย
+      } else if (response.data.data && Array.isArray(response.data.data.projects)) {
+        return response.data.data.projects; // ✅ กรณี `data.projects`
+      } else if (Array.isArray(response.data)) {
+        return response.data; // ✅ กรณีที่ API ส่งเป็น `[]` ตรง ๆ
+      } else {
+        console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", response.data);
+        return [];
+      }
+    } catch (error) {
+      console.error("❌ Error fetching projects:", error.response?.data || error.message);
       return [];
     }
+  };
+  
 
-    return response.data.projects;
-  } catch (error) {
-    console.error("❌ Error fetching projects:", error.response?.data || error.message);
-    throw error;
-  }
-};
+
 
 // ✅ สร้างโครงการใหม่
 export const createProject = async (data) => {
