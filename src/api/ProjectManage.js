@@ -1,6 +1,6 @@
   import axios from "axios";
 
-  const API_URL = "https://08b2-1-47-155-199.ngrok-free.app/api/projects";
+  const API_URL = "https://f88a-1-46-135-34.ngrok-free.app/api/projects";
 
   // ✅ ดึงข้อมูลโครงการทั้งหมด
   export const getAllProjects = async () => {
@@ -25,7 +25,7 @@
         return response.data.projects; // ✅ ใช้ได้เลย
       } else if (response.data.data && Array.isArray(response.data.data.projects)) {
         return response.data.data.projects; // ✅ กรณี `data.projects`
-      } else if (Array.isArray(response.data)) {
+      } else if (Array.isArray(response.data)) {  
         return response.data; // ✅ กรณีที่ API ส่งเป็น `[]` ตรง ๆ
       } else {
         console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", response.data);
@@ -36,9 +36,6 @@
       return [];
     }
   };
-  
-
-
 
 // ✅ สร้างโครงการใหม่
 export const createProject = async (data) => {

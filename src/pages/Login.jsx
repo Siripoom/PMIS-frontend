@@ -29,11 +29,7 @@ const Login = () => {
         const userRole = response.user?.role || "user"; // ✅ ถ้าไม่มี role ให้เป็น "user"
         const userName = response.user?.name || "Unknown"; // ✅ ถ้าไม่มี name ให้เป็น "Unknown"
 
-        localStorage.setItem("token", response.token);
-        localStorage.setItem("role", userRole);
-        localStorage.setItem("name", userName);
 
-        message.success(`Welcome, ${userName}!`);
 
         // ✅ นำทางไป Dashboard
         navigate("/admin/dashboard");
@@ -75,6 +71,7 @@ const Login = () => {
           placeholder="Password"
           prefix={<LockFilled />}
           value={password}
+        
           onChange={(e) => setPassword(e.target.value)}
         />
 
