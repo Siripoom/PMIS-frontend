@@ -147,7 +147,7 @@ const ProjectManagement = () => {
   { title: "Username", dataIndex: "username" }, 
   { title: "ชื่อโครงการ", dataIndex: "project_name" },
   { title: "รายละเอียด", dataIndex: "description" },
-  { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() + " บาท" }, 
+  { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() }, 
   { title: "สถานะ", dataIndex: "status" },
   { 
     title: "วันที่เริ่มต้น", 

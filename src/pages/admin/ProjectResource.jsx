@@ -1,174 +1,203 @@
 import React, { useState } from "react";
-import { Layout, Table, Checkbox, Button, Typography, Input, Dropdown, Menu } from "antd";
-import { SearchOutlined, DownOutlined, FileTextOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Layout, Table, Button, Typography, Input, Modal, Form, Select } from "antd";
+import { SearchOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import "../../styles/ProjectResource.css";
 const { Sider, Content } = Layout;
 
-// ✅ Dropdown Component
-const CategoryDropdown = ({ onSelect }) => {
-  const [selectedCategory, setSelectedCategory] = useState("หมวดหมู่");
+const ProjectResource = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false); // State สำหรับเปิด/ปิด Modal
+  const [form] = Form.useForm(); // ฟอร์ม instance สำหรับ Modal
+  const [editForm] = Form.useForm(); // ฟอร์ม instance สำหรับ Modal แก้ไข
+  const [dataSource, setDataSource] = useState([]); // State สำหรับเก็บข้อมูลที่กรอกในฟอร์ม
+  const [historyData, setHistoryData] = useState([]); // State สำหรับประวัติการเบิกทรัพยากร
+  const [count, setCount] = useState(0); // ตัวนับเพื่อเพิ่ม key ให้กับข้อมูลใหม่
+  const [editRecord, setEditRecord] = useState(null); // เก็บข้อมูลของรายการที่ต้องการแก้ไข
+  const [isAddResourceModalVisible, setIsAddResourceModalVisible] = useState(false);
+  const [formAdd] = Form.useForm();
 
-  const handleMenuClick = (e) => {
-    setSelectedCategory(e.key);
-    console.log("🔹 เลือกหมวดหมู่:", e.key);
-    onSelect(e.key); // ส่งค่าที่เลือกไปให้ parent component
+  
+  const showModal = () => {
+    setEditRecord(null); // ✅ ตั้งค่าเป็น null เพื่อให้เป็นโหมดเพิ่ม
+    form.resetFields(); // ✅ รีเซ็ตฟอร์มให้ว่าง
+    setIsModalVisible(true); // ✅ เปิด Modal
   };
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="อุปกรณ์ IT">อุปกรณ์ IT</Menu.Item>
-      <Menu.Item key="เฟอร์นิเจอร์">เฟอร์นิเจอร์</Menu.Item>
-      <Menu.Item key="เครื่องมือ">เครื่องมือ</Menu.Item>
-      <Menu.Item key="บุคลากร">บุคลากร</Menu.Item>
-    </Menu>
-  );
-  return (
-    <Dropdown overlay={menu} trigger={["click"]}>
-      <Button className="category-dropdown">
-        {selectedCategory} <DownOutlined />
-      </Button>
-    </Dropdown>
-  );
+  
+  
+    // ✅ เปิด Modal "เพิ่มทรัพยากร"
+  const showAddResourceModal = () => {
+    setIsAddResourceModalVisible(true);
+  };
+    // ✅ ปิด Modal "เพิ่มทรัพยากร"
+    const handleCancelAddResource = () => {
+      setIsAddResourceModalVisible(false);
+      formAdd.resetFields();
+    };
+
+  // ฟังก์ชันปิด Modal เมื่อกด "ยกเลิก"
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setIsModalVisible(false);
+    form.resetFields(); // รีเซ็ตฟอร์มเมื่อปิด Modal
+    editForm.resetFields();
+  };
+
+  // ฟังก์ชันเมื่อกรอกข้อมูลในฟอร์มและกด "ขอนุมัติ"
+  const handleFormSubmit = (values) => {
+    if (editRecord) {
+      // ✅ ถ้าเป็นโหมดแก้ไข ให้แทนที่ข้อมูลเดิมแทนการเพิ่มใหม่
+      setDataSource((prev) =>
+        prev.map((item) =>
+          item.key === editRecord.key ? { ...item, ...values } : item
+        )
+      );
+  
+      setHistoryData((prev) =>
+        prev.map((item) =>
+          item.key === editRecord.key
+            ? { ...item, ...values, history: `แก้ไขทรัพยากร ${values.projectName}` }
+            : item
+        )
+      );
+  
+
+    } else {
+      // ✅ ถ้าเป็นโหมดเพิ่ม ให้เพิ่มข้อมูลใหม่เข้าไป
+      const newData = {
+        key: count + 1,
+        ...values,
+        status: "รออนุมัติ",
+      };
+  
+      setDataSource([...dataSource, newData]);
+      setCount(count + 1);
+  
+      setHistoryData([
+        ...historyData,
+        { ...newData, history: `เบิกทรัพยากร ${values.projectName}` },
+      ]);
+  
+      
+    }
+  
+    setIsModalVisible(false); // ✅ ปิด Modal หลังจากเพิ่มหรือแก้ไขเสร็จ
+    form.resetFields(); // ✅ รีเซ็ตค่าฟอร์ม
+    setEditRecord(null); // ✅ รีเซ็ตค่าการแก้ไข
+  };
+  
+  
+
+  // ฟังก์ชันลบข้อมูล
+  const handleDelete = (key) => {
+    const newData = dataSource.filter((item) => item.key !== key);
+    setDataSource(newData);
+  };
+
+const showEditModal = (record) => {
+  console.log("📢 เปิด Modal แก้ไข:", record);
+  setEditRecord(record); // ✅ กำหนดค่าที่ต้องการแก้ไข
+  form.setFieldsValue(record); // ✅ โหลดค่าที่มีอยู่ในฟอร์ม
+  setIsModalVisible(true); // ✅ เปิด Modal
 };
 
-// ✅ Mock Data สำหรับตาราง (10 แถว)
-const mockData = Array.from({ length: 10 }, (_, index) => ({
-  key: index + 1,
-  creator: index % 2 === 0 ? "เครื่องพิมพ์" : "เก้าอี้สํานักงาน",
-  project: index % 4 === 0 ? "อุปกรณ์ IT"
-  : index % 4 === 1 ? "เฟอร์นิเจอร์"
-  : index % 4 === 2 ? "เครื่องมือ"
-  : "บุคลากร",
+  
+const handleEditSubmit = (values) => {
+  setDataSource((prev) =>
+    prev.map((item) =>
+      item.key === editRecord.key ? { ...item, ...values } : item
+    )
+  );
 
-  number: Math.floor(Math.random() * 1000) + 1, // ✅ สุ่มตัวเลขระหว่าง 1-1000
-  status: index % 2 === 0 ? { text: "พร้อมใช้งาน", color: "green" } // ✅ สีเขียว
-                          : { text: "กำลังใช้งาน", color: "blue" },  // 🔵 สีฟ้า
+  setHistoryData((prev) =>
+    prev.map((item) =>
+      item.username === editRecord.username
+        ? { ...item, ...values, history: `แก้ไขทรัพยากร ${values.projectName}` }
+        : item
+    )
+  );
 
-}));
+  message.success("✅ แก้ไขข้อมูลสำเร็จ!");
+  setIsEditModalVisible(false); // ✅ ปิด Modal
+  editForm.resetFields(); // ✅ รีเซ็ตฟอร์ม
+};
 
-// Mock dta ตาราง 2 (10 แถว)
-const userNames = ["phalat01", "pickup00", "pickupza55"]; // ✅ รายชื่อผู้ใช้ที่ต้องการสุ่ม
-const projectNames = [
-  "โครงการติดตั้งระบบเครือข่าย",
-  "โครงการปรับปรุงสำนักงาน",
-  "โครงการซ่อมบำรุงเครื่องจักร",
-  "โครงการพัฒนาแอปพลิเคชัน",
-  "โครงการจัดซื้ออุปกรณ์สำนักงาน",
-];
-const mockData1 = Array.from({ length: 10 }, (_, index) => ({
-  project1: projectNames[Math.floor(Math.random() * projectNames.length)], 
-  history: ` ${index % 3 === 0 ? "เครื่องพิมพ์"
-           : index % 3 === 1 ? "เก้าอี้สำนักงาน"
-           : "ชุดเครื่องมือช่าง"}`, // ✅ แสดงข้อความ "เบิก..." ให้สอดคล้องกับข้อมูล
-  username: userNames[Math.floor(Math.random() * userNames.length)], // ✅ สุ่มชื่อผู้ใช้
-  category: index % 4 === 0 ? "อุปกรณ์ IT"
-          : index % 4 === 1 ? "เฟอร์นิเจอร์"
-          : index % 4 === 2 ? "เครื่องมือ"
-          : "บุคลากร", // ✅ สุ่มหมวดหมู่
-  quantity: Math.floor(Math.random() * 20) + 1, // ✅ สุ่มจำนวนระหว่าง 1-20
-  status: index % 3 === 0 ? { text: "รออนุมัติ", color: "red" }
-         : index % 3 === 1 ? { text: "พร้อมใช้งาน", color: "green" }
-         : { text: "กำลังใช้งาน", color: "blue" }, // ✅ สุ่มสถานะ
-}));
+  
 
+const handleAddCategory = () => {
+  formAdd.validateFields().then(values => {
+    const newCategory = values.category.trim(); // ตัดช่องว่างออก
 
-// ✅ คอลัมน์ของตาราง1
-const columns = [
-  {
-    title: "ลำดับ",
-    dataIndex: "index",
-    render: (_, __, index) => index + 1, // ✅ แสดงลำดับของแถว
-  },
+    if (!newCategory) {
+      message.error("❌ กรุณากรอกหมวดหมู่");
+      return;
+    }
 
-  {
-    title: "รายการทรัพยากร",
-    dataIndex: "creator",
-  },
-  {
-    title: "หมวดหมู่",
-    dataIndex: "project",
-  },
-  {
-    title: "คงเหลือ",
-    dataIndex: "number",
-  },
-  {
-    title: "สถานะ",
-    dataIndex: "status",
-    render: (status) => (
-      <span style={{ color: status.color, fontWeight: "bold" }}>
-        {status.text}
-      </span>
-    ), // ✅ แสดงสถานะพร้อมสี
-  },
-  {
-    title: "จัดการ",
-    render: () => (
-      <div className="action-buttons">
-        <Button type="link" danger icon={<DeleteOutlined />}>
-          ลบ  
-        </Button>
-        <Button type="link" icon={<EditOutlined />}>
-          แก้ไข
-        </Button>
-      </div>
-    ),
-  },
-];
+   
+
+    // ✅ อัปเดต categoryOptions
+    setCategoryOptions(prevOptions => {
+      const updatedOptions = [...prevOptions, { label: newCategory, value: newCategory }];
+      console.log("📢 หมวดหมู่ที่อัปเดต:", updatedOptions); // 🔍 ตรวจสอบค่าที่อัปเดต
+      return updatedOptions;
+    });
+
+    // ✅ ตั้งค่าหมวดหมู่ในฟอร์ม "เบิก"
+    setTimeout(() => {
+      form.setFieldsValue({ category: newCategory });
+      console.log("📢 ตั้งค่า category ในฟอร์มเบิกเป็น:", newCategory);
+    }, 100); // 🔹 ใช้ setTimeout เพื่อให้ dropdown อัปเดตก่อน
+
+    // ✅ ปิด Modal และรีเซ็ตค่าในฟอร์ม
+    setIsAddResourceModalVisible(false);
+    formAdd.resetFields();
+  });
+};
 
 
-//คอลัมตาราง2
-// ✅ คอลัมน์ของตาราง
-const columns1 = [
-  {
-    title: "ชื่อผู้ใช้",
-    dataIndex: "username",
-    render: (text, record) => (
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div>
-          <div style={{ fontWeight: "bold" }}>{text}</div>
-          <div style={{ fontSize: "12px", color: "#888" }}>{record.dateTime}</div>
+
+
+
+const [categoryOptions, setCategoryOptions] = useState([
+  { label: "อุปกรณ์ IT", value: "อุปกรณ์ IT" },
+  { label: "เฟอร์นิเจอร์", value: "เฟอร์นิเจอร์" },
+  { label: "เครื่องมือ", value: "เครื่องมือ" },
+  { label: "บุคลากร", value: "บุคลากร" },
+]);
+
+
+  // คอลัมน์ของตาราง
+  const columns = [
+    { title: "ลำดับ", dataIndex: "key" },
+    { title: "Username", dataIndex: "username" },
+    { title: "ชื่อโครงการ", dataIndex: "projectName" },
+    { title: "หมวดหมู่", dataIndex: "category" },
+    { title: "จำนวน", dataIndex: "quantity" },
+    {
+      title: "จัดการ", render: (_, record) => (
+        <div className="action-buttons">
+          <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)}>ลบ</Button>
+          <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)}>
+  แก้ไข
+</Button>
+
+
         </div>
-      </div>
-    ),
-  },
-  {
-    title: "โครงการ", 
-    dataIndex: "project1",
-  },
-  {
-    title: "เบิกทรัพยากร",
-    dataIndex: "history", // ✅ แก้จาก resource เป็น history ให้ตรงกับ mockData1
-    render: (text) => <span style={{ fontWeight: "bold", color: "red" }}>{text}</span>,
-  },
-  {
-    title: "หมวดหมู่",
-    dataIndex: "category",
-    render: (text) => (
-      <span style={{ color: text === "อุปกรณ์ IT" ? "red" 
-                   : text === "เครื่องมือ" ? "green" 
-                   : text === "เฟอร์นิเจอร์" ? "black" 
-                   : "blue" }}>
-        {text}
-      </span>
-    ),
-  },
-  {
-    title: "จำนวน",
-    dataIndex: "quantity",
-    render: (text) => <span style={{ fontWeight: "bold", color: "red" }}>{text}</span>,
-  },
-  {
-    title: "สถานะ",
-    dataIndex: "status",
-    render: (status) => <span style={{ color: status.color, fontWeight: "bold" }}>{status.text}</span>,
-  },
-];
+      ),
+    },
+  ];
 
+  // คอลัมน์ของตารางประวัติการเบิกทรัพยากร
+  const historyColumns = [
+    { title: "ชื่อผู้ใช้", dataIndex: "username" },
+    { title: "โครงการ", dataIndex: "project" },
+    { title: "เบิกทรัพยากร", dataIndex: "history" },
+    { title: "หมวดหมู่", dataIndex: "category" },
+    { title: "จำนวน", dataIndex: "quantity" },
+    { title: "สถานะ", dataIndex: "status" },
+  ];
 
-const ProjectResource = () => {
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
       {/* Sidebar */}
@@ -176,59 +205,128 @@ const ProjectResource = () => {
         <Sidebar />
       </Sider>
       <Layout>
-        {/* Header */}
         <Header title="รายการทรัพยากร" />
-
-        {/* Content */}
         <Content className="projectResource-container">
-          {/* ✅ เพิ่มหัวข้อที่ผู้ใช้ต้องการ */}
           <Typography.Text className="projectResource-title">รายการทรัพยากร</Typography.Text>
 
           <div className="projectResource-header">
-     {/* Search */}
-      <Input
-        placeholder="ค้นหารายการทรัพยากร"
-        prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
-        className="projectResource-search"
-      />
-      <button type="primary" className="custom-search-button">
-        ค้นหา </button>
-        {/*dowpdown */}
-        <CategoryDropdown onSelect={(value) => console.log("🔹 หมวดหมู่ที่เลือก:", value)} />
-          {/*เบิกทรัพยากร*/}
-      <Button type="primary" className="resources-button">
-        เบิกทรัพยากร </Button>
-          {/*เพิ่มทรัพยากร*/}
-          <Button type="primary" className="add-resorces">
-            เพิ่มทรัพยากร
-          </Button>
-      </div>
+            <Input
+              placeholder="ค้นหารายการทรัพยากร"
+              prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+              className="projectResource-search"
+            />
+            <button type="primary" className="custom-search-button">ค้นหา</button>
+            <Button type="primary" className="resources-button" onClick={showModal}>
+              เบิกทรัพยากร
+            </Button>
+            <Button type="primary" className="add-resorces" onClick={showAddResourceModal}>
+              เพิ่มทรัพยากร
+            </Button>
+          </div>
+          {/* Modal สำหรับเบิกทรัพยากร */}
+          <Modal
+            title="เบิกทรัพยากร"
+            visible={isModalVisible}
+            onCancel={handleCancel}
+            footer={null}
+            width={600}
+          >
+            <Form form={form} onFinish={handleFormSubmit} layout="vertical">
+              <Form.Item label="Username" name="username" rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}>
+                <Input placeholder="username" />
+              </Form.Item>
+
+              <Form.Item label="ชื่อโครงการ" name="projectName" rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}>
+                <Input placeholder="ระบุชื่อโครงการ" />
+              </Form.Item>
+
+              <Form.Item label="เบิก" name="category" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}>
+  <Select placeholder="เลือกหมวดหมู่">
+    {categoryOptions.map(option => (
+      <Select.Option key={option.value} value={option.value}>
+        {option.label}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
+
+
+<Form.Item label="หมวดหมู่" name="category" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}> 
+  <Select placeholder="เลือกหมวดหมู่">
+    {categoryOptions.map(option => (
+      <Select.Option key={option.value} value={option.value}>
+        {option.label}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
+
+
+              <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
+                <Input type="number" placeholder="จำนวน" />
+              </Form.Item>
+
+              <Form.Item>
+  <Button type="primary" htmlType="submit">
+    {editRecord ? "บันทึกการแก้ไข" : "ขอนุมัติ"}
+  </Button>
+  <Button onClick={handleCancel} className="ml-2">ยกเลิก</Button>
+</Form.Item>
+            </Form>
+          </Modal>
+            <Form.Item>
+              
+            </Form.Item>
+
+          
+
+
     
-          {/* Table */}
+
+            <Modal title="เพิ่มทรัพยากร" visible={isAddResourceModalVisible} onCancel={handleCancelAddResource} footer={null} width={600}>
+  <Form form={formAdd} layout="vertical">
+    
+    {/* หมวดหมู่ */}
+    <Form.Item label="หมวดหมู่" name="category" rules={[{ required: true, message: "กรุณาตั้งหมวดหมู่" }]}>
+      <Input placeholder="ตั้งหมวดหมู่" />
+    </Form.Item>
+
+    {/* จำนวน */}
+    <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}>
+      <Input type="number" placeholder="ระบุจำนวน" />
+    </Form.Item>
+
+    <Form.Item>
+      <Button type="primary" onClick={handleAddCategory}>เพิ่ม</Button>
+      <Button onClick={handleCancelAddResource} className="ml-2">ยกเลิก</Button>
+    </Form.Item>
+
+  </Form>
+</Modal>
+
+          {/* ตารางทรัพยากร */}
           <Table
             columns={columns}
-            dataSource={mockData}
+            dataSource={dataSource}
             pagination={{ pageSize: 6, showSizeChanger: false }}
             className="projectResource-table"
           />
 
-        
-      </Content>
-           
-       {/* Table */}
-       <Table
-  title={() => (
-    <Typography.Text strong style={{ fontSize: "16px", color: "#333" }}>
-      ประวัติการเบิกทรัพยากร
-    </Typography.Text>
-  )}
-        columns={columns1}
-        dataSource={mockData1}
-        pagination={{ pageSize: 5, showSizeChanger: false }}
-        className="resource-table"
-      />
-      
-        {/* ✅ Footer */}
+        </Content>
+
+        {/* ตารางประวัติการเบิกทรัพยากร */}
+        <Content className="projectResource-container">
+          <Typography.Text strong style={{ fontSize: "16px", color: "#333" }}>
+            ประวัติการเบิกทรัพยากร
+          </Typography.Text>
+
+          <Table
+            columns={historyColumns}
+            dataSource={historyData}
+            pagination={{ pageSize: 5, showSizeChanger: false }}
+            className="resource-table"
+          />
+        </Content>
         <Footer />
       </Layout>
     </Layout>
