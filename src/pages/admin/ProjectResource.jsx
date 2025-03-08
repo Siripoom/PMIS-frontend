@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { message } from "antd";
 import { Layout, Table, Button, Typography, Input, Modal, Form, Select } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import "../../styles/ProjectResource.css";
+import { getAllResources, createResource, updateResource, deleteResource, useResource } from "../../api/ProjectResource";
+
 const { Sider, Content } = Layout;
 
 const ProjectResource = () => {
@@ -45,50 +48,43 @@ const ProjectResource = () => {
   };
 
   // ฟังก์ชันเมื่อกรอกข้อมูลในฟอร์มและกด "ขอนุมัติ"
-  const handleFormSubmit = (values) => {
-    if (editRecord) {
-      // ✅ ถ้าเป็นโหมดแก้ไข ให้แทนที่ข้อมูลเดิมแทนการเพิ่มใหม่
-      setDataSource((prev) =>
-        prev.map((item) =>
-          item.key === editRecord.key ? { ...item, ...values } : item
-        )
-      );
-  
-      setHistoryData((prev) =>
-        prev.map((item) =>
-          item.key === editRecord.key
-            ? { ...item, ...values, history: `แก้ไขทรัพยากร ${values.projectName}` }
-            : item
-        )
-      );
-  
-
-    } else {
-      // ✅ ถ้าเป็นโหมดเพิ่ม ให้เพิ่มข้อมูลใหม่เข้าไป
-      const newData = {
-        key: count + 1,
-        ...values,
-        status: "รออนุมัติ",
+  const handleFormSubmit = async (values) => {
+    try {
+      const requestData = {
+        username: values.username,
+        project_name: values.project_name,
+        resource_name: values.category, // ✅ เปลี่ยน category เป็น resource_name
+        quantity: Number(values.quantity), // ✅ แปลงเป็นตัวเลขก่อนส่ง
+        unit: values.category, // ✅ ตั้งค่า unit เป็นค่าของหมวดหมู่
       };
   
-      setDataSource([...dataSource, newData]);
-      setCount(count + 1);
+      if (isNaN(requestData.quantity)) {
+        message.error("❌ Quantity ต้องเป็นตัวเลข");
+        return;
+      }
   
-      setHistoryData([
-        ...historyData,
-        { ...newData, history: `เบิกทรัพยากร ${values.projectName}` },
-      ]);
-  
+      console.log("📢 กำลังส่งข้อมูลไปยัง API:", requestData); // ✅ Debug Data
       
+      const response = await createResource(requestData);
+      
+      if (response && response.success) {
+        message.success("✅ เบิกทรัพยากรสำเร็จ!");
+        fetchResources(); // ✅ โหลดข้อมูลใหม่
+        setDataSource(await getAllResources()); // ✅ โหลดข้อมูลใหม่จาก API
+        setIsModalVisible(false);
+        form.resetFields();
+      } else {
+        message.error("⚠️ มีบางอย่างผิดพลาดในการเพิ่มทรัพยากร");
+      }
+    } catch (error) {
+      console.error("❌ Error requesting resource:", error);
+      message.error("❌ ไม่สามารถเบิกทรัพยากรได้");
     }
-  
-    setIsModalVisible(false); // ✅ ปิด Modal หลังจากเพิ่มหรือแก้ไขเสร็จ
-    form.resetFields(); // ✅ รีเซ็ตค่าฟอร์ม
-    setEditRecord(null); // ✅ รีเซ็ตค่าการแก้ไข
   };
   
-  
 
+  
+  
   // ฟังก์ชันลบข้อมูล
   const handleDelete = (key) => {
     const newData = dataSource.filter((item) => item.key !== key);
@@ -125,34 +121,25 @@ const handleEditSubmit = (values) => {
 
   
 
-const handleAddCategory = () => {
-  formAdd.validateFields().then(values => {
-    const newCategory = values.category.trim(); // ตัดช่องว่างออก
+const handleAddCategory = async () => {
+  try {
+    const values = await formAdd.validateFields(); // ✅ ตรวจสอบค่าที่กรอก
+    console.log("📢 กำลังส่งข้อมูลไปยัง API:", values);
 
-    if (!newCategory) {
-      message.error("❌ กรุณากรอกหมวดหมู่");
-      return;
-    }
-
-   
-
-    // ✅ อัปเดต categoryOptions
-    setCategoryOptions(prevOptions => {
-      const updatedOptions = [...prevOptions, { label: newCategory, value: newCategory }];
-      console.log("📢 หมวดหมู่ที่อัปเดต:", updatedOptions); // 🔍 ตรวจสอบค่าที่อัปเดต
-      return updatedOptions;
+    await createResource({
+      name: values.category,  // ✅ ใช้ category เป็น name ใน API
+      category: values.category,
+      quantity: values.quantity,
     });
 
-    // ✅ ตั้งค่าหมวดหมู่ในฟอร์ม "เบิก"
-    setTimeout(() => {
-      form.setFieldsValue({ category: newCategory });
-      console.log("📢 ตั้งค่า category ในฟอร์มเบิกเป็น:", newCategory);
-    }, 100); // 🔹 ใช้ setTimeout เพื่อให้ dropdown อัปเดตก่อน
-
-    // ✅ ปิด Modal และรีเซ็ตค่าในฟอร์ม
-    setIsAddResourceModalVisible(false);
-    formAdd.resetFields();
-  });
+    message.success("✅ เพิ่มทรัพยากรสำเร็จ!");
+    fetchResources(); // ✅ โหลดข้อมูลใหม่
+    setIsAddResourceModalVisible(false); // ✅ ปิด Modal
+    formAdd.resetFields(); // ✅ รีเซ็ตฟอร์ม
+  } catch (error) {
+    console.error("❌ Error creating resource:", error);
+    message.error("❌ ไม่สามารถเพิ่มทรัพยากรได้");
+  }
 };
 
 
@@ -171,8 +158,8 @@ const [categoryOptions, setCategoryOptions] = useState([
   const columns = [
     { title: "ลำดับ", dataIndex: "key" },
     { title: "Username", dataIndex: "username" },
-    { title: "ชื่อโครงการ", dataIndex: "projectName" },
-    { title: "หมวดหมู่", dataIndex: "category" },
+    { title: "ชื่อโครงการ", dataIndex: "project_name" },
+    { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
     {
       title: "จัดการ", render: (_, record) => (
@@ -192,10 +179,10 @@ const [categoryOptions, setCategoryOptions] = useState([
   const historyColumns = [
     { title: "ชื่อผู้ใช้", dataIndex: "username" },
     { title: "โครงการ", dataIndex: "project" },
-    { title: "เบิกทรัพยากร", dataIndex: "history" },
-    { title: "หมวดหมู่", dataIndex: "category" },
+    { title: "เบิกทรัพยากร", dataIndex: "resource_name" },
+    { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
-    { title: "สถานะ", dataIndex: "status" },
+
   ];
 
   return (
@@ -236,11 +223,11 @@ const [categoryOptions, setCategoryOptions] = useState([
                 <Input placeholder="username" />
               </Form.Item>
 
-              <Form.Item label="ชื่อโครงการ" name="projectName" rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}>
+              <Form.Item label="ชื่อโครงการ" name="project_name" rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}>
                 <Input placeholder="ระบุชื่อโครงการ" />
               </Form.Item>
 
-              <Form.Item label="เบิก" name="category" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}>
+              <Form.Item label="เบิก" name="resource_name" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}>
   <Select placeholder="เลือกหมวดหมู่">
     {categoryOptions.map(option => (
       <Select.Option key={option.value} value={option.value}>
@@ -283,26 +270,39 @@ const [categoryOptions, setCategoryOptions] = useState([
 
     
 
-            <Modal title="เพิ่มทรัพยากร" visible={isAddResourceModalVisible} onCancel={handleCancelAddResource} footer={null} width={600}>
-  <Form form={formAdd} layout="vertical">
+            <Modal 
+  title="เพิ่มทรัพยากร" 
+  open={isAddResourceModalVisible} 
+  onCancel={handleCancelAddResource} 
+  footer={null}
+  width={600}
+>
+  <Form form={formAdd} layout="vertical" onFinish={handleAddCategory}>
     
-    {/* หมวดหมู่ */}
-    <Form.Item label="หมวดหมู่" name="category" rules={[{ required: true, message: "กรุณาตั้งหมวดหมู่" }]}>
+    <Form.Item 
+      label="หมวดหมู่" 
+      name="category" 
+      rules={[{ required: true, message: "กรุณาตั้งหมวดหมู่" }]}
+    >
       <Input placeholder="ตั้งหมวดหมู่" />
     </Form.Item>
 
-    {/* จำนวน */}
-    <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}>
+    <Form.Item 
+      label="จำนวน" 
+      name="quantity" 
+      rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+    >
       <Input type="number" placeholder="ระบุจำนวน" />
     </Form.Item>
 
     <Form.Item>
-      <Button type="primary" onClick={handleAddCategory}>เพิ่ม</Button>
+      <Button type="primary" htmlType="submit">เพิ่ม</Button>
       <Button onClick={handleCancelAddResource} className="ml-2">ยกเลิก</Button>
     </Form.Item>
 
   </Form>
 </Modal>
+
 
           {/* ตารางทรัพยากร */}
           <Table
