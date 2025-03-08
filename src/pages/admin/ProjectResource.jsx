@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // ✅ เพิ่ม useEffect
 import { message } from "antd";
 import { Layout, Table, Button, Typography, Input, Modal, Form, Select } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -20,7 +20,10 @@ const ProjectResource = () => {
   const [editRecord, setEditRecord] = useState(null); // เก็บข้อมูลของรายการที่ต้องการแก้ไข
   const [isAddResourceModalVisible, setIsAddResourceModalVisible] = useState(false);
   const [formAdd] = Form.useForm();
-
+  const [loading, setLoading] = useState(false); // ✅ เพิ่มตัวแปร state
+  useEffect(() => {
+    fetchResources();
+  }, []);
   
   const showModal = () => {
     setEditRecord(null); // ✅ ตั้งค่าเป็น null เพื่อให้เป็นโหมดเพิ่ม
@@ -47,42 +50,83 @@ const ProjectResource = () => {
     editForm.resetFields();
   };
 
-  // ฟังก์ชันเมื่อกรอกข้อมูลในฟอร์มและกด "ขอนุมัติ"
-  const handleFormSubmit = async (values) => {
+const handleFormSubmit = async (values) => {
+  try {
+    console.log("📢 ค่าที่ได้รับจากฟอร์ม:", values);
+
+    const requestData = {
+      username: values.username?.trim() || "DefaultUser",
+      project_name: values.project_name?.trim() || "DefaultProject",
+      resource_name: values.resource_name?.trim() || "ไม่ระบุ",
+      quantity: Number(values.quantity) || 0,
+      unit: values.category?.trim() || "ไม่ระบุ",
+    };
+
+    console.log("📢 ข้อมูลที่กำลังส่งไป API:", JSON.stringify(requestData, null, 2));
+
+    const response = await createResource(requestData);
+
+    console.log("✅ API Response:", JSON.stringify(response, null, 2));
+
+    if (response && response.message === "Resource created successfully") {
+      message.success("✅ เบิกทรัพยากรสำเร็จ!");
+
+      // ✅ เพิ่มข้อมูลไปยัง historyData
+      setHistoryData((prev) => [
+        ...prev,
+        {
+          key: prev.length + 1,
+          username: requestData.username,
+          project: requestData.project_name,
+          resource_name: requestData.resource_name,
+          unit: requestData.unit,
+          quantity: requestData.quantity,
+        },
+      ]);
+
+      await fetchResources(); // ✅ โหลดข้อมูลใหม่
+      setIsModalVisible(false);
+      form.resetFields();
+    } else {
+      console.error("⚠️ API Error Response:", response);
+      message.error("⚠️ มีบางอย่างผิดพลาดในการเพิ่มทรัพยากร");
+    }
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    message.error("❌ ไม่สามารถเบิกทรัพยากรได้");
+  }
+};
+
+
+
+  const fetchResources = async () => {
+    setLoading(true);
     try {
-      const requestData = {
-        username: values.username,
-        project_name: values.project_name,
-        resource_name: values.category, // ✅ เปลี่ยน category เป็น resource_name
-        quantity: Number(values.quantity), // ✅ แปลงเป็นตัวเลขก่อนส่ง
-        unit: values.category, // ✅ ตั้งค่า unit เป็นค่าของหมวดหมู่
-      };
+      console.log("📢 กำลังดึงข้อมูลทรัพยากรจาก API...");
+      const data = await getAllResources();
   
-      if (isNaN(requestData.quantity)) {
-        message.error("❌ Quantity ต้องเป็นตัวเลข");
-        return;
-      }
+      console.log("✅ API Response:", JSON.stringify(data, null, 2)); // ✅ ตรวจสอบ API Response
   
-      console.log("📢 กำลังส่งข้อมูลไปยัง API:", requestData); // ✅ Debug Data
-      
-      const response = await createResource(requestData);
-      
-      if (response && response.success) {
-        message.success("✅ เบิกทรัพยากรสำเร็จ!");
-        fetchResources(); // ✅ โหลดข้อมูลใหม่
-        setDataSource(await getAllResources()); // ✅ โหลดข้อมูลใหม่จาก API
-        setIsModalVisible(false);
-        form.resetFields();
+      if (Array.isArray(data) && data.length > 0) {
+        setDataSource(
+          data.map((item, index) => ({
+            key: index + 1, // ✅ ใช้เลข index + 1 เป็นลำดับ
+            resource_name: item.resource_name || "ไม่มีข้อมูล",
+            unit: item.unit || "ไม่มีข้อมูล",
+            quantity: item.quantity || 0,
+          }))
+        );
       } else {
-        message.error("⚠️ มีบางอย่างผิดพลาดในการเพิ่มทรัพยากร");
+        console.warn("⚠️ API ส่งข้อมูลว่างเปล่า:", data);
+        setDataSource([]);
       }
     } catch (error) {
-      console.error("❌ Error requesting resource:", error);
-      message.error("❌ ไม่สามารถเบิกทรัพยากรได้");
+      console.error("❌ Error fetching resources:", error);
+      message.error("❌ โหลดข้อมูลทรัพยากรล้มเหลว");
+    } finally {
+      setLoading(false);
     }
   };
-  
-
   
   
   // ฟังก์ชันลบข้อมูล
@@ -127,8 +171,8 @@ const handleAddCategory = async () => {
     console.log("📢 กำลังส่งข้อมูลไปยัง API:", values);
 
     await createResource({
-      name: values.category,  // ✅ ใช้ category เป็น name ใน API
-      category: values.category,
+      name: values.username,  // ✅ ใช้ category เป็น name ใน API
+      category: values.unit,
       quantity: values.quantity,
     });
 
@@ -157,8 +201,7 @@ const [categoryOptions, setCategoryOptions] = useState([
   // คอลัมน์ของตาราง
   const columns = [
     { title: "ลำดับ", dataIndex: "key" },
-    { title: "Username", dataIndex: "username" },
-    { title: "ชื่อโครงการ", dataIndex: "project_name" },
+    { title: "ชื่อทรัพยากร", dataIndex: "resource_name" },
     { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
     {
@@ -219,7 +262,7 @@ const [categoryOptions, setCategoryOptions] = useState([
             width={600}
           >
             <Form form={form} onFinish={handleFormSubmit} layout="vertical">
-              <Form.Item label="Username" name="username" rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}>
+              <Form.Item label="username" name="username" rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}>
                 <Input placeholder="username" />
               </Form.Item>
 

@@ -1,12 +1,13 @@
 import axios from "axios";
 
-const API_URL = "https://fe62-1-47-158-78.ngrok-free.app/api/resource";
+const API_URL = "https://4a77-1-46-64-32.ngrok-free.app/api/resource";
 
 
 export const createResource = async (data) => {
     try {
       const response = await axios.post(API_URL, data, {
         headers: {
+          "ngrok-skip-browser-warning": "skip-browser-warning",
           "Content-Type": "application/json",
         },
       });
@@ -22,13 +23,21 @@ export const createResource = async (data) => {
 // ✅ GET: ดึงรายการทรัพยากรทั้งหมด
 export const getAllResources = async () => {
   try {
-    const response = await axios.get(API_URL);
+    const response = await axios.get(API_URL, {
+      headers: {
+        "ngrok-skip-browser-warning": "skip-browser-warning",
+      },
+    });
+
+    console.log("✅ API Response จาก getAllResources:", response.data); // ✅ ตรวจสอบ API Response
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching resources:", error.message);
+    console.error("🔍 API Response:", error.response?.data); // ✅ Debug ตอบกลับจาก Backend
     throw error;
   }
 };
+
 
 // ✅ GET: ดึงข้อมูลทรัพยากรตาม ID
 export const getResourceById = async (id) => {
