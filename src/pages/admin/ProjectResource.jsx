@@ -75,12 +75,11 @@ const handleFormSubmit = async (values) => {
       setHistoryData((prev) => [
         ...prev,
         {
-          key: prev.length + 1,
-          username: requestData.username,
-          project: requestData.project_name,
-          resource_name: requestData.resource_name,
-          unit: requestData.unit,
-          quantity: requestData.quantity,
+          username: values.username?.trim() || "DefaultUser",
+          project_name: values.project_name?.trim() || "DefaultProject",
+          resource_name: values.resource_name?.trim() || "ไม่ระบุ",
+          quantity: Number(values.quantity) || 0,
+          unit: values.category?.trim() || "ไม่ระบุ",
         },
       ]);
 
@@ -109,7 +108,17 @@ const fetchResources = async () => {
         resource_id: item.resource_id, // ✅ ต้องมีฟิลด์นี้
         resource_name: item.resource_name || "ไม่มีข้อมูล",
         unit: item.unit || "ไม่มีข้อมูล",
+        quantity : item.quantity || 0,
+      }))
+    );
+    setHistoryData(
+      data.map((item, index) => ({
+        username: item.username || "ไม่ระบุ", // ✅ ควรตรงกับค่าที่ส่งไป
+        project_name: item.project_name || "ไม่ระบุ",
+        resource_name: item.resource_name || "ไม่มีข้อมูล",
+        unit: item.unit || "ไม่มีข้อมูล",
         quantity: item.quantity || 0,
+        created_at: item.created_at || "ไม่ระบุ"
       }))
     );
   } catch (error) {
@@ -240,7 +249,7 @@ const [categoryOptions, setCategoryOptions] = useState([
   // คอลัมน์ของตารางประวัติการเบิกทรัพยากร
   const historyColumns = [
     { title: "ชื่อผู้ใช้", dataIndex: "username" },
-    { title: "โครงการ", dataIndex: "project" },
+    { title: "โครงการ", dataIndex: "project_name" },
     { title: "เบิกทรัพยากร", dataIndex: "resource_name" },
     { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
@@ -290,7 +299,9 @@ const [categoryOptions, setCategoryOptions] = useState([
               </Form.Item>
 
               <Form.Item label="เบิก" name="resource_name" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}>
-  <Select placeholder="เลือกหมวดหมู่">
+ 
+ 
+  <Select placeholder="เลือกหมวดหมู่ที่มี">
     {categoryOptions.map(option => (
       <Select.Option key={option.value} value={option.value}>
         {option.label}

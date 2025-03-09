@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://9b0f-1-46-64-32.ngrok-free.app/api/resource";
-
+const API_URL = "https://c071-1-47-131-51.ngrok-free.app/api/resource";
 
 export const createResource = async (data) => {
     try {
