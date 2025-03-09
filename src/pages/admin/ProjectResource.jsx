@@ -80,6 +80,7 @@ const handleFormSubmit = async (values) => {
           resource_name: values.resource_name?.trim() || "ไม่ระบุ",
           quantity: Number(values.quantity) || 0,
           unit: values.category?.trim() || "ไม่ระบุ",
+
         },
       ]);
 
@@ -182,26 +183,47 @@ const handleEditSubmit = (values) => {
 
   
 
-const handleAddCategory = async () => {
+const handleAddResource = async () => {
   try {
-    const values = await formAdd.validateFields(); // ✅ ตรวจสอบค่าที่กรอก
-    console.log("📢 กำลังส่งข้อมูลไปยัง API:", values);
+    const values = await formAdd.validateFields();
+    console.log("📢 เพิ่มทรัพยากร:", values);
 
-    await createResource({
-      name: values.username,  // ✅ ใช้ category เป็น name ใน API
-      category: values.unit,
-      quantity: values.quantity,
-    });
+    // ตรวจสอบค่าก่อนส่ง API
+    if (!values.resource_name || !values.quantity || !values.category || !values.username) {
+      message.error("❌ โปรดกรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
 
-    message.success("✅ เพิ่มทรัพยากรสำเร็จ!");
-    fetchResources(); // ✅ โหลดข้อมูลใหม่
-    setIsAddResourceModalVisible(false); // ✅ ปิด Modal
-    formAdd.resetFields(); // ✅ รีเซ็ตฟอร์ม
+    const requestData = {
+      resource_name: values.resource_name.trim(),
+      quantity: Number(values.quantity), // ✅ เปลี่ยนจาก used_quantity เป็น quantity
+      unit: values.category.trim(), // ✅ ใช้ unit แทน category
+      username: values.username.trim(),
+    };
+
+    console.log("📢 ข้อมูลที่กำลังส่งไป API:", JSON.stringify(requestData, null, 2));
+
+    const response = await createResource(requestData);
+
+    console.log("✅ API Response:", JSON.stringify(response, null, 2));
+
+    if (response?.success) {
+      message.success("✅ เพิ่มทรัพยากรสำเร็จ!");
+
+      fetchResources(); // โหลดรายการทรัพยากรใหม่เพื่ออัปเดต Dropdown
+      setIsAddResourceModalVisible(false); // ปิด Modal
+      formAdd.resetFields(); // รีเซ็ตฟอร์ม
+    } else {
+      console.error("⚠️ API Error Response:", response);
+      message.error("⚠️ มีบางอย่างผิดพลาดในการเพิ่มทรัพยากร");
+    }
   } catch (error) {
     console.error("❌ Error creating resource:", error);
     message.error("❌ ไม่สามารถเพิ่มทรัพยากรได้");
   }
 };
+
+
 
 
 
@@ -282,98 +304,145 @@ const [categoryOptions, setCategoryOptions] = useState([
             </Button>
           </div>
           {/* Modal สำหรับเบิกทรัพยากร */}
-          <Modal
-            title="เบิกทรัพยากร"
-            visible={isModalVisible}
-            onCancel={handleCancel}
-            footer={null}
-            width={600}
-          >
-            <Form form={form} onFinish={handleFormSubmit} layout="vertical">
-              <Form.Item label="username" name="username" rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}>
-                <Input placeholder="username" />
-              </Form.Item>
-
-              <Form.Item label="ชื่อโครงการ" name="project_name" rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}>
-                <Input placeholder="ระบุชื่อโครงการ" />
-              </Form.Item>
-
-              <Form.Item label="เบิก" name="resource_name" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}>
- 
- 
-  <Select placeholder="เลือกหมวดหมู่ที่มี">
-    {categoryOptions.map(option => (
-      <Select.Option key={option.value} value={option.value}>
-        {option.label}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-
-
-<Form.Item label="หมวดหมู่" name="category" rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}> 
-  <Select placeholder="เลือกหมวดหมู่">
-    {categoryOptions.map(option => (
-      <Select.Option key={option.value} value={option.value}>
-        {option.label}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-
-
-              <Form.Item label="จำนวน" name="quantity" rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}>
-                <Input type="number" placeholder="จำนวน" />
-              </Form.Item>
-
-              <Form.Item>
-  <Button type="primary" htmlType="submit">
-    {editRecord ? "บันทึกการแก้ไข" : "ขอนุมัติ"}
-  </Button>
-  <Button onClick={handleCancel} className="ml-2">ยกเลิก</Button>
-</Form.Item>
-            </Form>
-          </Modal>
-            <Form.Item>
-              
-            </Form.Item>
-
-          
-
-
-    
-
-            <Modal 
-  title="เพิ่มทรัพยากร" 
-  open={isAddResourceModalVisible} 
-  onCancel={handleCancelAddResource} 
+         {/* Modal สำหรับเบิกทรัพยากร */}
+<Modal
+  title="เบิกทรัพยากร"
+  visible={isModalVisible}
+  onCancel={handleCancel}
   footer={null}
   width={600}
 >
-  <Form form={formAdd} layout="vertical" onFinish={handleAddCategory}>
-    
+  <Form 
+    form={form} 
+    onFinish={handleFormSubmit} 
+    layout="vertical"
+    onValuesChange={(changedValues) => {
+      if (changedValues.resource_name) {
+        // ค้นหาหมวดหมู่ที่เกี่ยวข้องจาก categoryOptions
+        const selectedCategory = categoryOptions.find(
+          (option) => option.value === changedValues.resource_name
+        );
+
+        if (selectedCategory) {
+          form.setFieldsValue({ category: selectedCategory.value });
+        }
+      }
+    }}
+  >
     <Form.Item 
-      label="หมวดหมู่" 
-      name="category" 
-      rules={[{ required: true, message: "กรุณาตั้งหมวดหมู่" }]}
+      label="username" 
+      name="username" 
+      rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
     >
-      <Input placeholder="ตั้งหมวดหมู่" />
+      <Input placeholder="username" />
+    </Form.Item>
+
+    <Form.Item 
+      label="ชื่อโครงการ" 
+      name="project_name" 
+      rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}
+    >
+      <Input placeholder="ระบุชื่อโครงการ" />
+    </Form.Item>
+
+    {/* ✅ เมื่อเลือก "เบิก" ระบบจะตั้งค่า "หมวดหมู่ที่มี" อัตโนมัติ */}
+    <Form.Item 
+      label="เบิก" 
+      name="resource_name" 
+      rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
+    >
+      <Select placeholder="เลือกหมวดหมู่">
+        {categoryOptions.map(option => (
+          <Select.Option key={option.value} value={option.value}>
+            {option.label}
+          </Select.Option>
+        ))}
+      </Select>
+    </Form.Item>
+
+    <Form.Item 
+      label="หมวดหมู่ที่มี" 
+      name="category" 
+      rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
+    >
+      <Select placeholder="เลือกหมวดหมู่ที่มีอยู่" disabled>
+        {categoryOptions.map(option => (
+          <Select.Option key={option.value} value={option.value}>
+            {option.label}
+          </Select.Option>
+        ))}
+      </Select>
     </Form.Item>
 
     <Form.Item 
       label="จำนวน" 
       name="quantity" 
-      rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+      rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}
     >
-      <Input type="number" placeholder="ระบุจำนวน" />
+      <Input type="number" placeholder="จำนวน" />
     </Form.Item>
 
     <Form.Item>
-      <Button type="primary" htmlType="submit">เพิ่ม</Button>
-      <Button onClick={handleCancelAddResource} className="ml-2">ยกเลิก</Button>
+      <Button type="primary" htmlType="submit">
+        {editRecord ? "บันทึกการแก้ไข" : "ขอนุมัติ"}
+      </Button>
+      <Button onClick={handleCancel} className="ml-2">ยกเลิก</Button>
     </Form.Item>
-
   </Form>
+</Modal>
+
+<Modal
+  title="เพิ่มทรัพยากร"
+  open={isAddResourceModalVisible}
+  onCancel={handleCancelAddResource}
+  footer={null}
+  width={600}
+>
+<Form form={formAdd} layout="vertical" onFinish={handleAddResource}>
+  <Form.Item 
+    label="ชื่อทรัพยากร" 
+    name="resource_name" 
+    rules={[{ required: true, message: "กรุณากรอกชื่อทรัพยากร" }]}
+  >
+    <Input placeholder="ระบุชื่อทรัพยากร" />
+  </Form.Item>
+
+  <Form.Item 
+    label="หมวดหมู่" 
+    name="category" 
+    rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
+  >
+    <Select placeholder="เลือกหมวดหมู่">
+      {categoryOptions.map(option => (
+        <Select.Option key={option.value} value={option.value}>
+          {option.label}
+        </Select.Option>
+      ))}
+    </Select>
+  </Form.Item>
+
+  <Form.Item 
+    label="จำนวน" 
+    name="quantity" 
+    rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+  >
+    <Input type="number" placeholder="ระบุจำนวน" />
+  </Form.Item>
+
+  <Form.Item 
+    label="ชื่อผู้ใช้" 
+    name="username" 
+    rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
+  >
+    <Input placeholder="ระบุชื่อผู้ใช้" />
+  </Form.Item>
+
+  <Form.Item>
+    <Button type="primary" htmlType="submit">เพิ่ม</Button>
+    <Button onClick={handleCancelAddResource} className="ml-2">ยกเลิก</Button>
+  </Form.Item>
+</Form>
+
 </Modal>
 
 
