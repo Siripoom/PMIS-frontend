@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://4a77-1-46-64-32.ngrok-free.app/api/resource";
+const API_URL = "https://9b0f-1-46-64-32.ngrok-free.app/api/resource";
 
 
 export const createResource = async (data) => {
@@ -61,14 +61,17 @@ export const updateResource = async (id, data) => {
   }
 };
 
-// ✅ DELETE: ลบทรัพยากร
-export const deleteResource = async (id) => {
+// ✅ DELETE: ลบทรัพยากรจาก API
+export const deleteResource = async (resource_id) => {
   try {
-    await axios.delete(`${API_URL}/${id}`);
-    return { success: true };
+      console.log(`📢 กำลังส่งคำขอลบทรัพยากร ID: ${resource_id} ไปยัง API`);
+      await axios.delete(`${API_URL}/${resource_id}`);
+
+      console.log("✅ ลบทรัพยากรสำเร็จ");
+      return { success: true };
   } catch (error) {
-    console.error("❌ Error deleting resource:", error.message);
-    throw error;
+      console.error("❌ Error deleting resource:", error.message);
+      throw error;
   }
 };
 

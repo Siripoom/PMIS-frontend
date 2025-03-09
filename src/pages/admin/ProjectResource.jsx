@@ -6,7 +6,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import "../../styles/ProjectResource.css";
-import { getAllResources, createResource, updateResource, deleteResource, useResource } from "../../api/ProjectResource";
+import { getAllResources, createResource, updateResource,deleteResource, useResource } from "../../api/ProjectResource";
 
 const { Sider, Content } = Layout;
 
@@ -97,49 +97,57 @@ const handleFormSubmit = async (values) => {
   }
 };
 
+const fetchResources = async () => {
+  setLoading(true);
+  try {
+    const data = await getAllResources();
+    console.log("📢 ข้อมูลจาก API:", data); // ✅ ตรวจสอบ API Response
 
+    setDataSource(
+      data.map((item, index) => ({
+        key: index + 1, // ✅ ใช้ index เป็น key
+        resource_id: item.resource_id, // ✅ ต้องมีฟิลด์นี้
+        resource_name: item.resource_name || "ไม่มีข้อมูล",
+        unit: item.unit || "ไม่มีข้อมูล",
+        quantity: item.quantity || 0,
+      }))
+    );
+  } catch (error) {
+    console.error("❌ โหลดข้อมูลทรัพยากรล้มเหลว:", error);
+    message.error("❌ โหลดข้อมูลทรัพยากรล้มเหลว");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchResources = async () => {
-    setLoading(true);
-    try {
-      console.log("📢 กำลังดึงข้อมูลทรัพยากรจาก API...");
-      const data = await getAllResources();
   
-      console.log("✅ API Response:", JSON.stringify(data, null, 2)); // ✅ ตรวจสอบ API Response
-  
-      if (Array.isArray(data) && data.length > 0) {
-        setDataSource(
-          data.map((item, index) => ({
-            key: index + 1, // ✅ ใช้เลข index + 1 เป็นลำดับ
-            resource_name: item.resource_name || "ไม่มีข้อมูล",
-            unit: item.unit || "ไม่มีข้อมูล",
-            quantity: item.quantity || 0,
-          }))
-        );
-      } else {
-        console.warn("⚠️ API ส่งข้อมูลว่างเปล่า:", data);
-        setDataSource([]);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching resources:", error);
-      message.error("❌ โหลดข้อมูลทรัพยากรล้มเหลว");
-    } finally {
-      setLoading(false);
+const handleDelete = async (key, id) => {
+  console.log(`📢 กำลังส่งคำขอลบทรัพยากร: ID = ${id}`);
+
+  if (!id) {
+    console.error("❌ ID ไม่ถูกต้อง:", id);
+    message.error("❌ ไม่สามารถลบได้ เนื่องจาก ID ไม่ถูกต้อง");
+    return;
+  }
+
+  try {
+    const response = await deleteResource(id);
+    
+    if (response?.success) {
+      console.log(`✅ ทรัพยากร ID: ${id} ถูกลบแล้ว!`);
+      
+      // ✅ อัปเดต UI โดยเอาทรัพยากรที่ถูกลบออกจาก dataSource
+      setDataSource((prev) => prev.filter((item) => item.resource_id !== id));
+      
+      message.success("✅ ลบทรัพยากรสำเร็จ!");
+    } else {
+      console.warn(`⚠️ ไม่สามารถลบทรัพยากร ID: ${id}`);
+      message.warning("⚠️ ลบไม่สำเร็จ โปรดลองใหม่!");
     }
-  };
-  
-  
-  // ฟังก์ชันลบข้อมูล
-  const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
-  };
-
-const showEditModal = (record) => {
-  console.log("📢 เปิด Modal แก้ไข:", record);
-  setEditRecord(record); // ✅ กำหนดค่าที่ต้องการแก้ไข
-  form.setFieldsValue(record); // ✅ โหลดค่าที่มีอยู่ในฟอร์ม
-  setIsModalVisible(true); // ✅ เปิด Modal
+  } catch (error) {
+    console.error("❌ ลบทรัพยากรผิดพลาด:", error);
+    message.error("❌ ลบทรัพยากรไม่สำเร็จ");
+  }
 };
 
   
@@ -207,7 +215,18 @@ const [categoryOptions, setCategoryOptions] = useState([
     {
       title: "จัดการ", render: (_, record) => (
         <div className="action-buttons">
-          <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)}>ลบ</Button>
+          <Button
+  type="link"
+  danger
+  icon={<DeleteOutlined />}
+  onClick={() => {
+    console.log("📢 Record ที่ถูกกดลบ:", record); // ✅ Debug ค่า record
+    handleDelete(record.key, record.resource_id);
+  }}
+>
+  ลบ
+</Button>
+
           <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)}>
   แก้ไข
 </Button>
