@@ -44,7 +44,7 @@ const Budget = () => {
   });
   const [hiddenData, setHiddenData] = useState({
     projectId: "",
-    spentBy: "admin-uuid-1234", // แทนค่าด้วย UUID ของ Admin
+    spentBy: "6007fd99-589c-4230-8be3-f46b1a10db8a", // แทนค่าด้วย UUID ของ Admin
   });
 
   // ✅ ดึงข้อมูลงบประมาณจาก API
@@ -69,7 +69,7 @@ const Budget = () => {
   
         setHiddenData({
           projectId: response.project_id || "", 
-          spentBy: response.spent_by || "admin-uuid-1234",
+          spentBy: response.spent_by || "6007fd99-589c-4230-8be3-f46b1a10db8a",
         });
   
         console.log("📌 hiddenData หลังจากดึงข้อมูล:", hiddenData);
