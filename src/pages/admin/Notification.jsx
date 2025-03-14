@@ -1,42 +1,71 @@
-import { Layout, Card, List, Typography, Table, Badge, Button } from "antd";
+import { useState, useEffect } from "react";
+import { getNotifications } from "../../api/Notifications";
+import { Layout, Card, List, Typography, Table, Badge, Button, message } from "antd";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import { RightOutlined, BellFilled, BellOutlined, InfoCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { RightOutlined, DeleteOutlined } from "@ant-design/icons";
+import moment from "moment";
 import "../../styles/Notification.css";
 
 const { Sider, Content } = Layout;
 
-// ข้อมูลแจ้งเตือนล่าสุด
-const notifications = [
-  { id: 1, text: "Andi Restu (CEO) sent you a message", time: "07:00 AM", unread: true },
-  { id: 2, text: "[Reminder] Enter new employee data in system", time: "Yesterday, 04:00 PM", unread: true },
-  { id: 3, text: "Salary payments have been received by all employees", time: "August 1st 2022", unread: false },
-  { id: 4, text: "Marketing division needs new employees", time: "August 1st 2022", unread: false },
-  { id: 5, text: "[Reminder] Report payroll data for July 2022", time: "August 1st 2022", unread: false },
-  { id: 6, text: "New employee documents must be updated", time: "August 1st 2022", unread: false },
-];
-
-// ข้อมูลการแจ้งเตือนความก้าวหน้าโครงการ
-const projectNotifications = [
-  { key: 1, icon: <BellFilled style={{ color: "red" }} />, username: "pickupza55", role: "Manager", status: "ดำเนินการ", statusColor: "blue" },
-  { key: 2, icon: <BellFilled style={{ color: "red" }} />, username: "pickupOO", role: "Manager", status: "ดำเนินการ", statusColor: "blue" },
-  { key: 3, icon: <BellFilled style={{ color: "red" }} />, username: "pickupza55", role: "Manager", status: "ดำเนินการ", statusColor: "blue" },
-  { key: 4, icon: <BellOutlined style={{ color: "gray" }} />, username: "pickupOO", role: "Manager", status: "ยกเลิก", statusColor: "red" },
-  { key: 5, icon: <BellOutlined style={{ color: "gray" }} />, username: "phalat01", role: "Admin", status: "ดำเนินการเสร็จสิ้น", statusColor: "green" },
-];
-
-// ข้อมูลสถานะการแจ้งเตือน
-const notificationSummary = [
-  { label: "อ่านแล้ว", count: 8, icon: <InfoCircleOutlined /> },
-  { label: "ยังไม่อ่าน", count: 2, icon: <InfoCircleOutlined /> },
-  { label: "ลบ", count: 0, icon: <DeleteOutlined /> },
-];
-
 const Notification = () => {
-  // คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
+  const [projectNotifications, setProjectNotifications] = useState([]);
+  const [notificationSummary, setNotificationSummary] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  // ✅ โหลดข้อมูลจาก API เมื่อ Component โหลด
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  // ✅ ฟังก์ชันดึงข้อมูลจาก API
+  const fetchNotifications = async () => {
+    try {
+      console.log("📢 กำลังโหลดข้อมูลการแจ้งเตือน...");
+      const data = await getNotifications();
+
+      console.log("✅ API Response:", data);
+
+      if (!data || !Array.isArray(data)) {
+        console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", data);
+        throw new Error("❌ ข้อมูล API ไม่ถูกต้อง");
+      }
+
+      // ✅ ตรวจสอบและจัดรูปแบบข้อมูลให้สอดคล้องกับ UI
+      const formattedNotifications = data.map((notif) => ({
+        notification_id: notif.notification_id,
+        user_id: notif.user_id,
+        message: notif.message,
+        status: notif.status,
+        created_at: notif.created_at,
+      }));
+
+      setNotifications(formattedNotifications);
+      console.log("✅ โหลดข้อมูลสำเร็จ:", formattedNotifications);
+    } catch (error) {
+      console.error("❌ เกิดข้อผิดพลาดขณะโหลดข้อมูลแจ้งเตือน:", error);
+      message.error("โหลดข้อมูลการแจ้งเตือนไม่สำเร็จ");
+    }
+  };
+
+  // ✅ ฟังก์ชันลบการแจ้งเตือน
+  
+  // ✅ ฟังก์ชันแปลง `created_at` เป็นรูปแบบที่อ่านง่าย
+  const formatDate = (dateString) => {
+    const date = moment(dateString);
+    if (date.isSame(moment(), "day")) {
+      return date.format("hh:mm A"); // วันนี้ → 07:00 AM
+    } else if (date.isSame(moment().subtract(1, "day"), "day")) {
+      return `Yesterday, ${date.format("hh:mm A")}`; // เมื่อวาน → Yesterday, 04:00 PM
+    } else {
+      return date.format("MMMM Do YYYY"); // วันที่เก่า → August 1st 2022
+    }
+  };
+
+  // ✅ คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
   const columns = [
-    { title: "", dataIndex: "icon", key: "icon" },
     { title: "Username", dataIndex: "username", key: "username" },
     { title: "Role", dataIndex: "role", key: "role" },
     {
@@ -45,24 +74,27 @@ const Notification = () => {
       key: "status",
       render: (text, record) => (
         <span>
-          <Badge color={record.statusColor} /> {text}
+          <Badge color={record.statusColor || "blue"} /> {text}
         </span>
       ),
     },
     {
       title: "",
       key: "action",
-      render: () => (
-        <a href="#" className="delete-link">
-          ลบ <InfoCircleOutlined style={{ fontSize: "12px" }} />
-        </a>
+      render: (_, record) => (
+        <Button
+          type="link"
+          danger
+          onClick={() => handleDeleteNotification(record.notification_id)}
+        >
+          ลบ <DeleteOutlined />
+        </Button>
       ),
     },
   ];
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
-      {/* Sidebar */}
       <Sider width={220} style={{ background: "#001529" }}>
         <Sidebar />
       </Sider>
@@ -72,32 +104,49 @@ const Notification = () => {
 
         <Content className="notification-page">
           <div className="notification-container">
-            {/* การแจ้งเตือนล่าสุด */}
+            {/* 🔹 การแจ้งเตือนล่าสุด */}
             <Card className="notification-card">
-              <div className="notification-header">
-                <Typography.Title level={4}>การแจ้งเตือนล่าสุด</Typography.Title>
-                <a href="/notifications" className="view-all">
-                  View All <RightOutlined />
-                </a>
-              </div>
+              <Typography.Title level={4}>การแจ้งเตือนล่าสุด</Typography.Title>
 
-              <List
-                dataSource={notifications}
-                renderItem={(item) => (
-                  <List.Item className={`notification-item ${item.unread ? "unread" : ""}`}>
-                    <div className="notification-content">
-                      {item.unread && <span className="dot" />}
-                      <Typography.Text strong={item.unread}>{item.text}</Typography.Text>
-                    </div>
-                    <Typography.Text className="notification-time">{item.time}</Typography.Text>
-                  </List.Item>
-                )}
-              />
+              {notifications.length === 0 ? (
+                <Typography.Text type="secondary">ไม่มีการแจ้งเตือน</Typography.Text>
+              ) : (
+                <List
+                  dataSource={notifications}
+                  renderItem={(item) => (
+                    <List.Item
+                      className={`notification-item ${
+                        item.status === "Unread" ? "unread" : ""
+                      }`}
+                    >
+                      {/* 🔹 จุดสถานะ Unread */}
+                      {item.status === "Unread" && (
+                        <Badge color="blue" style={{ marginRight: "10px" }} />
+                      )}
+
+                      {/* 🔹 ข้อความแจ้งเตือน */}
+                      <div className="notification-content">
+                        <Typography.Text strong={item.status === "Unread"}>
+                          {item.message}
+                        </Typography.Text>
+                      </div>
+
+                      {/* 🔹 เวลา */}
+                      <Typography.Text className="notification-time">
+                        {formatDate(item.created_at)}
+                      </Typography.Text>
+
+                      {/* 🔹 ปุ่มลูกศรขวา */}
+                      <Button type="link" icon={<RightOutlined />} />
+                    </List.Item>
+                  )}
+                />
+              )}
             </Card>
 
-            {/* กล่องล่าง: การแจ้งเตือนโครงการ + สถานะแจ้งเตือน */}
+            {/* 🔹 กล่องล่าง: การแจ้งเตือนโครงการ + สถานะแจ้งเตือน */}
             <div className="notification-bottom">
-              {/* การแจ้งเตือนความก้าวหน้าโครงการ (ซ้ายล่าง) */}
+              {/* 🔹 การแจ้งเตือนความก้าวหน้าโครงการ */}
               <Card className="project-notification-card">
                 <div className="notification-header">
                   <Typography.Title level={4} className="notification-title">
@@ -107,20 +156,39 @@ const Notification = () => {
                     View All <RightOutlined />
                   </a>
                 </div>
-                <Table columns={columns} dataSource={projectNotifications} pagination={false} />
+
+                {projectNotifications.length === 0 ? (
+                  <Typography.Text type="secondary">
+                    ไม่มีข้อมูลการแจ้งเตือน
+                  </Typography.Text>
+                ) : (
+                  <Table
+                    columns={columns}
+                    dataSource={projectNotifications}
+                    pagination={false}
+                  />
+                )}
               </Card>
 
-              {/* กล่องสรุปสถานะการแจ้งเตือน (ขวาล่าง) */}
+              {/* 🔹 กล่องสรุปสถานะการแจ้งเตือน */}
               <Card className="notification-summary-card">
                 <Typography.Title level={4} className="notification-title">
-                  สถานะการแจ้งเตือน •
+                  สถานะการแจ้งเตือน
                 </Typography.Title>
-                {notificationSummary.map((item, index) => (
-                  <div className="notification-summary-item" key={index}>
-                    <span>{item.icon} {item.label}</span>
-                    <span>{item.count}</span>
-                  </div>
-                ))}
+
+                {notificationSummary.length === 0 ? (
+                  <Typography.Text type="secondary">ไม่มีข้อมูลสถานะ</Typography.Text>
+                ) : (
+                  notificationSummary.map((item, index) => (
+                    <div className="notification-summary-item" key={index}>
+                      <span>
+                        {item.icon} {item.label}
+                      </span>
+                      <span>{item.count}</span>
+                    </div>
+                  ))
+                )}
+
                 <Button type="primary" className="view-more-button">
                   View More
                 </Button>

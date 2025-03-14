@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://06d0-202-44-35-79.ngrok-free.app/api/budget";
+const API_URL = "https://0d39-1-47-131-51.ngrok-free.app/api/budget";
 
 // ✅ ดึงข้อมูลสรุปงบประมาณของโครงการ
 export const getBudgetSummary = async (projectId) => {

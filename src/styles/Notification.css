@@ -143,3 +143,40 @@
   color: #007bff;
   font-size: 12px;
 }
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.notification-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: blue;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: 16px;
+}
+
+.notification-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notification-time {
+  font-size: 14px;
+  color: gray;
+}

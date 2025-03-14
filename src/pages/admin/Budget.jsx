@@ -1,5 +1,4 @@
 import React from "react";
-import { v4 as uuidv4 } from "uuid"; // ✅ ใช้ UUID ในการสุ่มค่า
 import { message } from "antd"; // ✅ เพิ่มการนำเข้า message
 import { Layout, Button, Input, Card } from "antd";
 import { RightOutlined } from "@ant-design/icons";
@@ -38,49 +37,59 @@ const projectData = [
 const Budget = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [budget, setBudget] = useState({
+    projectName: "",
     total: 0,
     spent: 0,
     remaining: 0,
-  });
-  const [hiddenData, setHiddenData] = useState({
-    projectId: "",
+});
+  const [hiddenData,] = useState({
+    projectId: "0c0b73a9-507b-4ee8-a4f2-4f82455dd167",
     spentBy: "6007fd99-589c-4230-8be3-f46b1a10db8a", // แทนค่าด้วย UUID ของ Admin
   });
 
-  // ✅ ดึงข้อมูลงบประมาณจาก API
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-        const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167"; // ใช้ projectId จริง
-        const response = await getBudgetSummary(projectId);
+          const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167";
+          const response = await getBudgetSummary(projectId);
   
-        console.log("📌 Debug Response จาก API:", response); // ✅ Debug
+          console.log("📌 ข้อมูลที่ได้จาก API:", JSON.stringify(response, null, 2));
   
-        if (!response || typeof response !== "object") {
-          console.error("❌ API ไม่ส่ง JSON กลับมา, อาจเป็น HTML หรือ Error:", response);
-          return;
-        }
+          if (!response || typeof response !== "object") {
+              console.error("❌ API response ไม่ถูกต้อง:", response);
+              return;
+          }
   
-        setBudget({
-          total: Number(response.budget_total) || 0,
-          spent: Number(response.budget_spent) || 0,
-          remaining: Number(response.budget_remaining) || 0,
-        });
+          const projectName = response.project_name || "⚠️ ไม่มีชื่อโครงการจาก API";
+          const totalBudget = Number(response.budget_total) || 0;
+          const spentAmount = Number(response.budget_spent) || Number(response.total_spent) || 0;
+          let remainingBudget = Number(response.budget_remaining);
   
-        setHiddenData({
-          projectId: response.project_id || "", 
-          spentBy: response.spent_by || "6007fd99-589c-4230-8be3-f46b1a10db8a",
-        });
+          if (isNaN(remainingBudget) || remainingBudget < 0) {
+              remainingBudget = Math.max(totalBudget - spentAmount, 0);
+          }
   
-        console.log("📌 hiddenData หลังจากดึงข้อมูล:", hiddenData);
-        
+          console.log("✅ Updated Budget:", { 
+              projectName, 
+              totalBudget, 
+              spentAmount, 
+              remainingBudget 
+          });
+  
+          setBudget({
+              projectName, 
+              total: totalBudget,
+              spent: spentAmount,
+              remaining: remainingBudget,
+          });
+  
       } catch (error) {
-        console.error("❌ Error fetching budget summary:", error);
+          console.error("❌ Error fetching budget summary:", error);
       }
-    };
-  
-    fetchBudget();
-  }, []);
+  };
+  fetchBudget();
+}, []);
+
   
   // ✅ เปิด-ปิด Modal บันทึกค่าใช้จ่าย
   const showExpenseModal = () => {
@@ -90,25 +99,26 @@ const Budget = () => {
     setIsExpenseModalVisible(false);
   };
 
- const handleExpenseSubmit = async (values) => {
+  const handleExpenseSubmit = async (values) => {
     try {
         if (!hiddenData.projectId) {
             message.error("❌ ไม่สามารถบันทึกได้: ไม่พบ project_id");
             return;
         }
 
-        // ✅ กำหนดค่า `spent_by` เป็น ID ที่ต้องการส่ง
+        // ✅ กำหนดค่าที่จะส่งไป API
         const expenseData = {
+            project_name: values.project_name, // ✅ ใช้ชื่อโครงการจากฟอร์ม
             project_id: hiddenData.projectId, 
             budget_total: Number(values.budget_total), 
             budget_spent: Number(values.amount),
             budget_remaining: Number(values.budget_remaining),
-            spent_by: "6007fd99-589c-4230-8be3-f46b1a10db8a", // ✅ ใช้ ID ที่คุณต้องการส่ง
+            spent_by: "6007fd99-589c-4230-8be3-f46b1a10db8a",
         };
 
-        console.log("📌 กำลังส่งข้อมูลไป API:", expenseData); // ✅ Debug log
+        console.log("📌 กำลังส่งข้อมูลไป API:", expenseData);
 
-        // ✅ ส่งข้อมูลไปยัง API
+        // ✅ ส่งข้อมูลไปยัง API และรับค่าตอบกลับ
         const response = await recordExpense(expenseData, {
             headers: {
                 "ngrok-skip-browser-warning": "skip-browser-warning",
@@ -116,16 +126,24 @@ const Budget = () => {
             },
         });
 
+        console.log("✅ ข้อมูลที่ส่งกลับจาก API:", response.data);
+
+        // ✅ ใช้ค่าที่ส่งไป + ค่าที่ API ส่งกลับมา อัปเดต UI
+        setBudget({
+            projectName: response.data.project_name || values.project_name, // ✅ ใช้ค่าจาก API หรือค่าที่ส่งไป
+            total: Number(response.data.budget_total) || Number(values.budget_total),
+            spent: Number(response.data.budget_spent) || Number(values.amount),
+            remaining: Number(response.data.budget_remaining) || Number(values.budget_remaining),
+        });
+
         message.success(response.message || "✅ บันทึกค่าใช้จ่ายสำเร็จ!");
+
         handleExpenseCancel();
     } catch (error) {
         console.error("❌ Error recording expense:", error);
-
-        // ✅ แสดงข้อความ Error ถ้ามีปัญหากับ API
         message.error(error.response?.data?.error || "❌ เกิดข้อผิดพลาดในการบันทึกค่าใช้จ่าย!");
     }
 };
-
 
 
   const labels = ["โครงการ 1", "โครงการ 2", "โครงการ 3", "โครงการ 4", "โครงการ 5", "โครงการ 6", "โครงการ 7", "โครงการ 8", "โครงการ 9", "โครงการ 10"];
@@ -135,12 +153,12 @@ const Budget = () => {
       
       {
         label: "งบประมาณที่ใช้ไป",
-        data: [],
+        data: [budget.spent],
         backgroundColor: "#FF4D4F",
       },
       {
         label: "งบประมาณคงเหลือ",
-        data: [],
+        data: [budget.remaining],
         backgroundColor: "#52C41A",
       },
     ],
@@ -265,29 +283,30 @@ const Budget = () => {
               </Button>
             </div>
             <div className="budget-summary">
-  <Card className="budget-card budget-used">
+  <Card className="budget-card budget-used" style={{ backgroundColor: "#FFD700" }}>
     <p>งบประมาณที่ใช้ไป</p>
-    <h3>{budget.spent} บาท</h3> {/* ✅ เป็นตัวเลข */}
-                
-              </Card>
-              <Card className="budget-card budget-remaining">
-                <p>งบประมาณคงเหลือ</p>
-                <h3>{budget.remaining} บาท</h3> {/* ✅ เป็นตัวเลข */}
-              </Card>
-            </div>
-            <div className="budget-total-wrapper">
-              <Card className="budget-card budget-total">
-                <p>งบประมาณทั้งหมด</p>
-                <h3>{budget.total} บาท</h3> {/* ✅ เป็นตัวเลข */}
-              </Card>
-            </div>
-            <div className="budget-search-container">
-              <Input
-                placeholder="Search"
-                prefix={<SearchOutlined />}
-                className="budget-search-input"
-              />
-            </div>
+    <h3>{budget.spent.toLocaleString()} บาท</h3>
+  </Card>
+
+  <Card className="budget-card budget-remaining" style={{ backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500" }}>
+    <p>งบประมาณคงเหลือ</p>
+    <h3>{Math.max(budget.remaining, 0).toLocaleString()} บาท</h3>
+  </Card>
+</div>
+
+<div className="budget-total-wrapper">
+  <Card className="budget-card budget-total" style={{ backgroundColor: "#808080" }}>
+    <p>งบประมาณทั้งหมด</p>
+    <h3>{budget.total.toLocaleString()} บาท</h3>
+  </Card>
+</div>
+<div className="budget-search-container">
+  <Input
+    placeholder="Search"
+    prefix={<SearchOutlined />}
+    className="budget-search-input"
+  />
+</div>
           </div>
         </Content>
         <Content className="budget-chart-wrapper">
@@ -333,45 +352,47 @@ const Budget = () => {
   onCancel={handleExpenseCancel}
   footer={null} // ❌ ไม่มี Footer เพื่อให้ควบคุมปุ่มได้ใน Form
 >
-  <Form layout="vertical" onFinish={handleExpenseSubmit} initialValues={{
+ <Form layout="vertical" onFinish={handleExpenseSubmit} initialValues={{
     project_name: "",
     budget_total: 0,
     amount: 0,
     budget_remaining: 0
-  }}>
-    {/* ✅ งบประมาณของโครงการ (กรอกเอง) */}
+}}>
+    {/* ✅ ชื่อโครงการ */}
     <Form.Item 
-      label="งบประมาณของโครงการ"
-      name="budget_total"
-      rules={[{ required: true, message: "กรุณากรอกงบประมาณทั้งหมด" }]}
+        label="ชื่อโครงการ"
+        name="project_name"
+        rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}
     >
-      <Input type="number" placeholder="0.00" suffix="บาท" />
+        <Input placeholder="กรอกชื่อโครงการ" />
     </Form.Item>
 
-    {/* ✅ งบประมาณที่ใช้ไปของโครงการ (กรอกเอง) */}
+    {/* ✅ งบประมาณทั้งหมดของโครงการ */}
     <Form.Item 
-      label="งบประมาณที่ใช้ไปของโครงการ"
-      name="amount"
-      rules={[{ required: true, message: "กรุณากรอกจำนวนเงินที่ใช้ไป" }]}
+        label="งบประมาณทั้งหมดของโครงการ"
+        name="budget_total"
+        rules={[{ required: true, message: "กรุณากรอกงบประมาณทั้งหมด" }]}
     >
-      <Input type="number" placeholder="0.00" suffix="บาท" />
+        <Input type="number" placeholder="0.00" suffix="บาท" />
     </Form.Item>
 
+    {/* ✅ งบประมาณที่ใช้ไปของโครงการ */}
     <Form.Item 
-  label="งบประมาณคงเหลือของโครงการ"
-  name="budget_remaining"
-  rules={[{ required: true, message: "กรุณากรอกงบประมาณคงเหลือ" }]}
->
-  <Input 
-    type="number"
-    placeholder="0.00"
-    suffix="บาท"
-    onChange={(e) => {
-      const value = Number(e.target.value);
-    }}
-  />
-</Form.Item>
+        label="งบประมาณที่ใช้ไปของโครงการ"
+        name="amount"
+        rules={[{ required: true, message: "กรุณากรอกจำนวนเงินที่ใช้ไป" }]}
+    >
+        <Input type="number" placeholder="0.00" suffix="บาท" />
+    </Form.Item>
 
+    {/* ✅ งบประมาณคงเหลือของโครงการ */}
+    <Form.Item 
+        label="งบประมาณคงเหลือของโครงการ"
+        name="budget_remaining"
+        rules={[{ required: true, message: "กรุณากรอกงบประมาณคงเหลือ" }]}
+    >
+        <Input type="number" placeholder="0.00" suffix="บาท" />
+    </Form.Item>
     {/* ✅ ปุ่มบันทึกค่าใช้จ่าย */}
     <Form.Item>
       <Button type="primary" htmlType="submit">บันทึก</Button>
