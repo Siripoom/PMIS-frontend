@@ -1,6 +1,5 @@
 import axios from "axios";
-
-const API_URL = "https://5961-1-46-135-34.ngrok-free.app/api/auth/login"; 
+const API_URL = `${import.meta.env.VITE_API_URL}api/auth/login`;
 
 export const login = async (data) => {
   try {

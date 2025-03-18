@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://e9b4-1-46-152-188.ngrok-free.app/api/auth/users"; // ✅ ใช้ base URL ที่ถูกต้อง
+
+
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/register`;
 // ✅ ดึงข้อมูล
 export const getAllUser = async () => {
   try {

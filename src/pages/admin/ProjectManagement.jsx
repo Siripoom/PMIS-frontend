@@ -1,3 +1,7 @@
+
+//ทดสอบโดยให้ username เป็นแอดมิน และข้อมูลที่เหลือห้ามซ้ํากันในตาราง ไม่งั้นจะไม่สามารถเพิ่มข้อมูลได้
+// หากต้องการทดสอบใหม่ให้ลบข้อมูลในตารางก่อน และเพิ่มข้อมูลใหม่
+
 import {
   Layout,
   Table,
@@ -26,6 +30,13 @@ import {
 
 const { Sider, Content } = Layout;
 const { Option } = Select;
+
+const statusMapping = {
+  Planned: "กำลังวางแผน",
+  "In Progress": "กำลังดำเนินงาน",
+  Completed: "สำเร็จ",
+  Delayed: "เกินกำหนดการ",
+};
 
 const ProjectManagement = () => {
   const [projects, setProjects] = useState([]);
@@ -77,7 +88,7 @@ const ProjectManagement = () => {
   
     // ตั้งค่าข้อมูลเดิมในฟอร์ม
     form.setFieldsValue({
-      username: record.username,
+ 
       project_name: record.project_name,
       description: record.description,
       budget: record.budget,
@@ -144,11 +155,14 @@ const ProjectManagement = () => {
 
   const columns = [
   { title: "เลือก", dataIndex: "select", render: () => <Checkbox /> },
-  { title: "Username", dataIndex: "username" }, 
   { title: "ชื่อโครงการ", dataIndex: "project_name" },
   { title: "รายละเอียด", dataIndex: "description" },
   { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() }, 
-  { title: "สถานะ", dataIndex: "status" },
+  { 
+    title: "สถานะ", 
+    dataIndex: "status", 
+    render: (text) => statusMapping[text] || text, // Map status to Thai
+  },
   { 
     title: "วันที่เริ่มต้น", 
     dataIndex: "start_date", 

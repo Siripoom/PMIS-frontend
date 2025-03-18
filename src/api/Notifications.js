@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://0c57-202-44-35-79.ngrok-free.app/api/notifications/all";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/notifications/all`;
 
 // ✅ ดึงข้อมูลการแจ้งเตือนจาก API
 export const getNotifications = async () => {

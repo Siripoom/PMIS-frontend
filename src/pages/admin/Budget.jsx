@@ -31,7 +31,30 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 const { Sider, Content } = Layout;
 //Mock data ของโครงการต่างๆ
 const projectData = [
-
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "07:00 AM",
+  },
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "Yesterday, 04:00 PM",
+  },
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "August 1st 2022",
+  },
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "August 1st 2022",
+  },
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "August 1st 2022",
+  },
+  {
+    title: "โครงการดำเนินการติดตั้ง",
+    time: "August 1st 2022",
+  }
 ];
 
 const Budget = () => {
@@ -50,46 +73,62 @@ const Budget = () => {
   useEffect(() => {
     const fetchBudget = async () => {
       try {
-          const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167";
-          const response = await getBudgetSummary(projectId);
-  
-          console.log("📌 ข้อมูลที่ได้จาก API:", JSON.stringify(response, null, 2));
-  
-          if (!response || typeof response !== "object") {
-              console.error("❌ API response ไม่ถูกต้อง:", response);
-              return;
-          }
-  
-          const projectName = response.project_name || "⚠️ ไม่มีชื่อโครงการจาก API";
-          const totalBudget = Number(response.budget_total) || 0;
-          const spentAmount = Number(response.budget_spent) || Number(response.total_spent) || 0;
-          let remainingBudget = Number(response.budget_remaining);
-  
-          if (isNaN(remainingBudget) || remainingBudget < 0) {
-              remainingBudget = Math.max(totalBudget - spentAmount, 0);
-          }
-  
-          console.log("✅ Updated Budget:", { 
-              projectName, 
-              totalBudget, 
-              spentAmount, 
-              remainingBudget 
-          });
-  
-          setBudget({
-              projectName, 
-              total: totalBudget,
-              spent: spentAmount,
-              remaining: remainingBudget,
-          });
-  
-      } catch (error) {
-          console.error("❌ Error fetching budget summary:", error);
-      }
-  };
-  fetchBudget();
-}, []);
+        const storedBudget = JSON.parse(localStorage.getItem("budgetData"));
+        if (storedBudget) {
+          console.log("📌 Using cached budget data:", storedBudget);
+          setBudget(storedBudget);
+          return;
+        }
 
+        const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167";
+        const response = await getBudgetSummary(projectId);
+
+        if (!response || typeof response !== "object") {
+          console.error("❌ API response is incorrect:", response);
+          return;
+        }
+
+        const totalBudget = Number(response.budget_total) || 0;
+        const spentAmount = Number(response.budget_spent) || 0;
+        let remainingBudget = Number(response.budget_remaining);
+
+        if (isNaN(remainingBudget) || remainingBudget < 0) {
+          remainingBudget = Math.max(totalBudget - spentAmount, 0);
+        }
+
+        const budgetData = {
+          total: totalBudget,
+          spent: spentAmount,
+          remaining: remainingBudget,
+        };
+
+        // Store the fetched data in localStorage
+        localStorage.setItem("budgetData", JSON.stringify(budgetData));
+
+        setBudget(budgetData);
+
+        // Update line chart data dynamically
+        setLineData(prevData => ({
+          ...prevData,
+          datasets: [
+            {
+              ...prevData.datasets[0],
+              data: [...prevData.datasets[0].data, remainingBudget], // Add the remaining budget to the dataset
+            },
+            {
+              ...prevData.datasets[1],
+              data: [...prevData.datasets[1].data, spentAmount], // Add the spent amount to the dataset
+            },
+          ],
+        }));
+      } catch (error) {
+        console.error("❌ Error fetching budget:", error);
+      }
+    };
+
+    fetchBudget();
+  }, []);
+  
   
   // ✅ เปิด-ปิด Modal บันทึกค่าใช้จ่าย
   const showExpenseModal = () => {
@@ -101,50 +140,54 @@ const Budget = () => {
 
   const handleExpenseSubmit = async (values) => {
     try {
-        if (!hiddenData.projectId) {
-            message.error("❌ ไม่สามารถบันทึกได้: ไม่พบ project_id");
-            return;
-        }
-
-        // ✅ กำหนดค่าที่จะส่งไป API
-        const expenseData = {
-            project_name: values.project_name, // ✅ ใช้ชื่อโครงการจากฟอร์ม
-            project_id: hiddenData.projectId, 
-            budget_total: Number(values.budget_total), 
-            budget_spent: Number(values.amount),
-            budget_remaining: Number(values.budget_remaining),
-            spent_by: "6007fd99-589c-4230-8be3-f46b1a10db8a",
-        };
-
-        console.log("📌 กำลังส่งข้อมูลไป API:", expenseData);
-
-        // ✅ ส่งข้อมูลไปยัง API และรับค่าตอบกลับ
-        const response = await recordExpense(expenseData, {
-            headers: {
-                "ngrok-skip-browser-warning": "skip-browser-warning",
-                "Content-Type": "application/json",
-            },
-        });
-
-        console.log("✅ ข้อมูลที่ส่งกลับจาก API:", response.data);
-
-        // ✅ ใช้ค่าที่ส่งไป + ค่าที่ API ส่งกลับมา อัปเดต UI
-        setBudget({
-            projectName: response.data.project_name || values.project_name, // ✅ ใช้ค่าจาก API หรือค่าที่ส่งไป
-            total: Number(response.data.budget_total) || Number(values.budget_total),
-            spent: Number(response.data.budget_spent) || Number(values.amount),
-            remaining: Number(response.data.budget_remaining) || Number(values.budget_remaining),
-        });
-
-        message.success(response.message || "✅ บันทึกค่าใช้จ่ายสำเร็จ!");
-
-        handleExpenseCancel();
+      if (!hiddenData.projectId) {
+        message.error("❌ ไม่สามารถบันทึกได้: ไม่พบ project_id");
+        return;
+      }
+  
+      // Define the data to be sent to the API
+      const expenseData = {
+        project_name: values.project_name,
+        project_id: hiddenData.projectId,
+        budget_total: Number(values.budget_total),
+        budget_spent: Number(values.amount),
+        budget_remaining: Number(values.budget_remaining),
+        spent_by: "6007fd99-589c-4230-8be3-f46b1a10db8a",
+      };
+  
+      console.log("📌 Sending data to API:", expenseData);
+  
+      // Send the data to the API and receive the response
+      const response = await recordExpense(expenseData, {
+        headers: {
+          "ngrok-skip-browser-warning": "skip-browser-warning",
+          "Content-Type": "application/json",
+        },
+      });
+  
+      console.log("✅ API Response:", response.data);
+  
+      // Update state and localStorage with the new values
+      const updatedBudget = {
+        total: Number(response.data.budget_total) || Number(values.budget_total),
+        spent: Number(response.data.budget_spent) || Number(values.amount),
+        remaining: Number(response.data.budget_remaining) || Number(values.budget_remaining),
+      };
+  
+      // Update state
+      setBudget(updatedBudget);
+  
+      // Save the updated budget to localStorage
+      localStorage.setItem("budgetData", JSON.stringify(updatedBudget));
+  
+      message.success(response.message || "✅ บันทึกค่าใช้จ่ายสำเร็จ!");
+      handleExpenseCancel();
     } catch (error) {
-        console.error("❌ Error recording expense:", error);
-        message.error(error.response?.data?.error || "❌ เกิดข้อผิดพลาดในการบันทึกค่าใช้จ่าย!");
+      console.error("❌ Error recording expense:", error);
+      message.error(error.response?.data?.error || "❌ เกิดข้อผิดพลาดในการบันทึกค่าใช้จ่าย!");
     }
-};
-
+  };
+  
 
   const labels = ["โครงการ 1", "โครงการ 2", "โครงการ 3", "โครงการ 4", "โครงการ 5", "โครงการ 6", "โครงการ 7", "โครงการ 8", "โครงการ 9", "โครงการ 10"];
   const data = {
@@ -207,27 +250,32 @@ const Budget = () => {
   };
 
   //กราฟเส้น
-  const lineData = {
-    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October"],
+  const [lineData, setLineData] = useState({
+    labels: ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม"],
     datasets: [
       {
-        label: "งบประมาณคงเหลือ",
-        data: [],
-        borderColor: "#52C41A",
-        backgroundColor: "rgba(24, 144, 255, 0.2)",
-        tension: 0.4,
+        label: "งบประมาณคงเหลือ",  // งบประมาณคงเหลือ
+        data: [],  // เพิ่มข้อมูลที่ต้องการที่นี่
+        borderColor: "#52C41A",  // สีเส้น
+        backgroundColor: "rgba(47, 139, 225, 0.2)",  // สีพื้นหลัง
+        tension: 0.4,  // ทำให้เส้นไม่ตรงเกินไป
+        fill: false,  // ไม่กรอกพื้นที่ใต้เส้น
+        borderWidth: 3,  // ความหนาของเส้น
+        pointRadius: 0,  // ลบจุดที่ปรากฏ
       },
       {
-        label: "งบประมาณที่ใช้ไป",
-        data: [],
-        borderColor: "#722ED1", // สีม่วง
-        backgroundColor: "rgba(114, 46, 209, 0.2)",
-        tension: 0.4,
+        label: "งบประมาณที่ใช้ไป",  // งบประมาณที่ใช้ไป
+        data: [],  // เพิ่มข้อมูลที่ต้องการที่นี่
+        borderColor: "#722ED1",  // สีเส้น
+        backgroundColor: "rgba(114, 46, 209, 0.2)",  // สีพื้นหลัง
+        tension: 0.4,  // ทำให้เส้นไม่ตรงเกินไป
+        fill: false,  // ไม่กรอกพื้นที่ใต้เส้น
+        borderWidth: 3,  // ความหนาของเส้น
+        pointRadius: 0,  // ลบจุดที่ปรากฏ
       }
     ],
-  };
+  });
   
-
   const lineOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -254,6 +302,7 @@ const Budget = () => {
       },
     },
   };
+  
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
@@ -317,7 +366,7 @@ const Budget = () => {
           <Card className="budget-linechart-card">
             <p className="budget-linechart-title">กราฟเส้นเปรียบเทียบงบประมาณ</p>
             <div style={{ width: "100%", height: "280px" }}>
-              <Line options={lineOptions} data={lineData} />
+              <Line options={lineOptions} data={data} />
             </div>
           </Card>
         </Content>

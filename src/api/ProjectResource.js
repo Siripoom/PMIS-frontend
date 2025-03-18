@@ -1,6 +1,6 @@
 import axios from "axios";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/projectResource`;
 
-const API_URL = "https://d612-202-14-164-203.ngrok-free.app/api/projectResource";
 
 export const createResource = async (data) => {
   try {
@@ -20,20 +20,40 @@ export const createResource = async (data) => {
 
 export const getAllResources = async () => {
   try {
+    console.log("📢 Calling API:", API_URL);
+  
     const response = await axios.get(API_URL, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
+        "Content-Type": "application/json", // เพิ่ม Content-Type เพื่อให้แน่ใจว่า API ตอบกลับเป็น JSON
       },
+      timeout: 5000, // Timeout 5 วินาที
     });
-
-    console.log("✅ API Response จาก getAllProjectResources:", response.data);
-    return response.data;
+  
+    console.log("✅ API Response (Raw Data):", response.data);
+  
+    if (!response.data) {
+      console.error("❌ API ส่งข้อมูลเป็น `undefined` หรือ `null`:", response);
+      return [];
+    }
+  
+    // ✅ รองรับโครงสร้างที่แตกต่างกัน
+    if (Array.isArray(response.data)) {
+      return response.data; // กรณีที่ API ส่งเป็น Array ตรง ๆ
+    } else if (response.data.projects && Array.isArray(response.data.projects)) {
+      return response.data.projects; // กรณีที่ API ส่งข้อมูลใน `projects`
+    } else if (response.data.data && response.data.data.projects && Array.isArray(response.data.data.projects)) {
+      return response.data.data.projects; // กรณีที่ API ส่งข้อมูลใน `data.projects`
+    } else {
+      console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", response.data);
+      return [];
+    }
   } catch (error) {
-    console.error("❌ Error fetching project resources:", error.message);
-    console.error("🔍 API Response:", error.response?.data);
-    throw error;
+    console.error("❌ Error fetching resources:", error.response?.data || error.message);
+    return [];
   }
 };
+
 
 export const getResourceById = async (id) => {
   try {

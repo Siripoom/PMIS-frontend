@@ -41,7 +41,7 @@ const ProjectProgress = () => {
         <Content className="projectProgress-container">
           {/* Big Calendar */}
           <Card className="calendar-card">
-            <h2>ปฏิทินความคืบหน้าของโครงการ</h2>
+       
             <BigCalendar />
           </Card>
 

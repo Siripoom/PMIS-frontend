@@ -2,94 +2,24 @@ import { useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { Select } from "antd";
+import * as FaIcons from "react-icons/fa"; // ไอคอน
 
+const { Option } = Select;
 const localizer = momentLocalizer(moment);
 
+// ข้อมูลตัวอย่าง
 const projects = [
-  {
-    id: 1,
-    title: "Project A - To Do",
-    start: new Date(2025, 0, 1), // 1 Jan 2025
-    end: new Date(2025, 0, 15), // 15 Jan 2025
-    status: "To Do",
-    color: "#4285F4", // Blue
-  },
-  {
-    id: 2,
-    title: "Project A - Doing",
-    start: new Date(2025, 0, 10),
-    end: new Date(2025, 1, 10),
-    status: "Doing",
-    color: "#7CB342", // Green
-  },
-  {
-    id: 3,
-    title: "Project A - Review",
-    start: new Date(2025, 1, 15),
-    end: new Date(2025, 2, 10),
-    status: "Review",
-    color: "#FF9800", // Orange
-  },
-  {
-    id: 4,
-    title: "Project A - Testing",
-    start: new Date(2025, 2, 15),
-    end: new Date(2025, 3, 10),
-    status: "Testing",
-    color: "#E65100", // Dark Orange
-  },
-  {
-    id: 5,
-    title: "Project A - Done",
-    start: new Date(2025, 3, 15),
-    end: new Date(2025, 4, 5),
-    status: "Done",
-    color: "#2E7D32", // Dark Green
-  },
-  {
-    id: 6,
-    title: "Project B - To Do",
-    start: new Date(2025, 0, 5),
-    end: new Date(2025, 0, 20),
-    status: "To Do",
-    color: "#546E7A", // Grey
-  },
-  {
-    id: 7,
-    title: "Project B - Doing",
-    start: new Date(2025, 1, 1),
-    end: new Date(2025, 1, 28),
-    status: "Doing",
-    color: "#1565C0", // Dark Blue
-  },
-  {
-    id: 8,
-    title: "Project B - Review",
-    start: new Date(2025, 2, 5),
-    end: new Date(2025, 2, 25),
-    status: "Review",
-    color: "#8BC34A", // Light Green
-  },
-  {
-    id: 9,
-    title: "Project B - Testing",
-    start: new Date(2025, 3, 1),
-    end: new Date(2025, 3, 30),
-    status: "Testing",
-    color: "#FF5722", // Deep Orange
-  },
-  {
-    id: 10,
-    title: "Project B - Done",
-    start: new Date(2025, 4, 10),
-    end: new Date(2025, 4, 30),
-    status: "Done",
-    color: "#4CAF50", // Medium Green
-  },
+  { id: 1, title: "To Do", start: new Date(2025, 0, 1), end: new Date(2025, 0, 5), status: "To Do" },
+  { id: 2, title: "Doing", start: new Date(2025, 0, 10), end: new Date(2025, 1, 10), status: "Doing" },
+  { id: 3, title: "Review", start: new Date(2025, 1, 15), end: new Date(2025, 2, 15), status: "Review" },
+  { id: 4, title: "Testing", start: new Date(2025, 2, 15), end: new Date(2025, 3, 10), status: "Testing" },
+  { id: 5, title: "Done", start: new Date(2025, 3, 15), end: new Date(2025, 3, 16), status: "Done" },
 ];
-// กำหนดสีสำหรับแต่ละสถานะ
-const getEventColor = (status) => {
-  switch (status) {
+
+// ฟังก์ชันกำหนดสีของแต่ละสถานะตามวันสิ้นสุด
+const getEventColor = (event) => {
+  switch (event.status) {
     case "To Do":
       return "#1E88E5"; // ฟ้า
     case "Doing":
@@ -101,51 +31,83 @@ const getEventColor = (status) => {
     case "Done":
       return "#6D4C41"; // น้ำตาล
     default:
-      return "#546E7A"; // เทา
+      return "#000000"; // สีดำ
   }
 };
+
+// ฟังก์ชันเพิ่มไอคอนเข้าไปใน Event
+const eventRenderer = ({ event }) => {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      {event.status === "Testing" && <FaIcons.FaClock style={{ color: "white" }} />}
+      {event.status === "Review" && <FaIcons.FaCommentAlt style={{ color: "white" }} />}
+      {event.status === "Done" && <FaIcons.FaTrashAlt style={{ color: "white" }} />}
+      <span>{event.title}</span>
+    </div>
+  );
+};
+
 const BigCalendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
 
   return (
-    <div>
+    <div style={{ padding: "20px", backgroundColor: "#f8f9fa", borderRadius: "10px" }}>
+      {/* ส่วนหัวของหน้า */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2 style={{ fontWeight: "bold" }}>ความคืบหน้าของโครงการ</h2>
+        <Select
+          value={selectedCategory}
+          onChange={(value) => setSelectedCategory(value)}
+          style={{ width: 200 }}
+        >
+          <Option value="ทั้งหมด">เลือกประเภท</Option>
+          <Option value="Development">Development</Option>
+          <Option value="Marketing">Marketing</Option>
+          <Option value="Design">Design</Option>
+        </Select>
+      </div>
+
+      {/* Gantt Chart */}
       <Calendar
         localizer={localizer}
         events={projects}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500 }}
+        style={{ height: 600, backgroundColor: "#fff", borderRadius: "10px", padding: "10px" }}
         onSelectEvent={(event) => setSelectedEvent(event)}
         eventPropGetter={(event) => ({
           style: {
-            backgroundColor: getEventColor(event.status),
+            backgroundColor: getEventColor(event), // ใช้สีจาก getEventColor
             color: "#fff",
-            borderRadius: "5px",
-            padding: "5px",
+            borderRadius: "6px",
+            padding: "4px 8px",
+            height: "24px",
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
           },
         })}
+        components={{ event: eventRenderer }}
+        views={['month', 'week', 'day']} // การเลือกมุมมอง
+        toolbar={true} // แสดงปุ่ม Today, Back, Next
+        messages={{
+          today: 'วันนี้',
+          previous: 'ย้อนกลับ',
+          next: 'ถัดไป',
+          month: 'เดือน',
+          week: 'สัปดาห์',
+          day: 'วัน',
+        }}
       />
+
+      {/* รายละเอียดโครงการที่เลือก */}
       {selectedEvent && (
-        <div
-          style={{
-            marginTop: 10,
-            padding: 10,
-            background: "#f5f5f5",
-            borderRadius: 5,
-          }}
-        >
+        <div style={{ marginTop: 20, padding: 10, background: "#f5f5f5", borderRadius: 5 }}>
           <h4>รายละเอียดกิจกรรม</h4>
-          <p>
-            <strong>ชื่อ:</strong> {selectedEvent.title}
-          </p>
-          <p>
-            <strong>วันที่เริ่ม:</strong>{" "}
-            {moment(selectedEvent.start).format("DD/MM/YYYY")}
-          </p>
-          <p>
-            <strong>วันที่สิ้นสุด:</strong>{" "}
-            {moment(selectedEvent.end).format("DD/MM/YYYY")}
-          </p>
+          <p><strong>ชื่อ:</strong> {selectedEvent.title}</p>
+          <p><strong>วันที่เริ่ม:</strong> {moment(selectedEvent.start).format("DD/MM/YYYY")}</p>
+          <p><strong>วันที่สิ้นสุด:</strong> {moment(selectedEvent.end).format("DD/MM/YYYY")}</p>
         </div>
       )}
     </div>

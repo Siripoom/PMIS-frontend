@@ -49,8 +49,6 @@ const Notification = () => {
       message.error("โหลดข้อมูลการแจ้งเตือนไม่สำเร็จ");
     }
   };
-
-  // ✅ ฟังก์ชันลบการแจ้งเตือน
   
   // ✅ ฟังก์ชันแปลง `created_at` เป็นรูปแบบที่อ่านง่าย
   const formatDate = (dateString) => {
@@ -92,7 +90,69 @@ const Notification = () => {
       ),
     },
   ];
+  // ✅ ฟังก์ชันโหลด Mock Data
+  const loadMockData = () => {
+    // 🔹 Mock Data สำหรับการแจ้งเตือนโครงการ
+    const mockProjectNotifications = [
+      {
+        notification_id: "1",
+        username: "admin",
+        role: "Project Manager",
+        status: "In Progress",
+        statusColor: "blue",
+      },
+      {
+        notification_id: "2",
+        username: "john_doe",
+        role: "Developer",
+        status: "Completed",
+        statusColor: "green",
+      },
+      {
+        notification_id: "3",
+        username: "jane_smith",
+        role: "QA Tester",
+        status: "Pending Review",
+        statusColor: "orange",
+      },
+    ];
+    
+    // 🔹 Mock Data สำหรับสรุปสถานะแจ้งเตือน
+    const mockNotificationSummary = [
+      { label: "Unread", count: 5, icon: <Badge color="blue" /> },
+      { label: "Read", count: 10, icon: <Badge color="green" /> },
+      { label: "Archived", count: 3, icon: <Badge color="gray" /> },
+    ];
 
+    // ✅ อัปเดต state ด้วย mock data
+    setProjectNotifications(mockProjectNotifications);
+    setNotificationSummary(mockNotificationSummary);
+  };
+
+  // ✅ คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
+  const colum2 = [
+    { title: "Username", dataIndex: "username", key: "username" },
+    { title: "Role", dataIndex: "role", key: "role" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (text, record) => (
+        <span>
+          <Badge color={record.statusColor || "blue"} /> {text}
+        </span>
+      ),
+    },
+    {
+      title: "",
+      key: "action",
+      render: (_, record) => (
+        <Button type="link" danger>
+          ลบ <DeleteOutlined />
+        </Button>
+      ),
+    },
+  ];
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
       <Sider width={220} style={{ background: "#001529" }}>
