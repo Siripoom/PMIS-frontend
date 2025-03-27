@@ -106,28 +106,17 @@ const ProjectManagement = () => {
 
   const handleAddProject = async (values) => {
     try {
-      console.log("📢 Creating project:", values);
-      const newProject = await createProject(values);
-      console.log("✅ New Project Created:", newProject);
-  
+      const newProject = await createProject(values, fileList);
       if (!newProject || !newProject.project_id) {
-        throw new Error("❌ API ไม่ส่งข้อมูลโครงการกลับมา");
+        throw new Error("API ไม่ส่งข้อมูลโครงการกลับมา");
       }
-  
       message.success("เพิ่มโครงการสำเร็จ!");
       handleCancel();
-      fetchProjects(); // ✅ รีโหลดข้อมูลใหม่
+      fetchProjects();
     } catch (error) {
-      console.error("❌ Error adding project:", error);
       message.error("เพิ่มโครงการไม่สำเร็จ");
     }
   };
-
-
-
-
-
-
   const handleEditProject = async (values) => {
     try {
       console.log("📢 Updating project:", modalState.data.project_id, values);
@@ -155,7 +144,7 @@ const ProjectManagement = () => {
 
   const columns = [
   { title: "เลือก", dataIndex: "select", render: () => <Checkbox /> },
-  { title: "ชื่อโครงการ", dataIndex: "project_name" },
+  { title: "ชื่อผู้สร้าง", dataIndex: "project_name" },
   { title: "รายละเอียด", dataIndex: "description" },
   { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() }, 
   { 
@@ -173,12 +162,12 @@ const ProjectManagement = () => {
     dataIndex: "end_date",  
     render: (text) => (text ? text.split("T")[0] : "ไม่ระบุ") 
   },
-  { 
+  {
     title: "เอกสารแนบ",
     dataIndex: "document",
     render: (file) => file ? <a href={file} target="_blank" rel="noopener noreferrer">เปิดไฟล์</a> : "ไม่มีไฟล์"
   },
-  {
+  { 
     title: "จัดการ",
     render: (_, record) => (
       <div className="flex space-x-2">
@@ -285,14 +274,15 @@ const handleDeleteProject = async (id) => {
 
     {/* แนบเอกสาร */}
     <Form.Item label="แนบเอกสาร" name="document">
-      <Upload
-        fileList={fileList}
-        beforeUpload={() => false} // ป้องกันการอัปโหลดอัตโนมัติ
-        onChange={handleFileChange}
-      >
-        <Button icon={<UploadOutlined />}>แนบไฟล์</Button>
-      </Upload>
-    </Form.Item>
+  <Upload
+    fileList={fileList}
+    beforeUpload={() => false}  // ป้องกันไม่ให้ไฟล์ถูกอัปโหลดโดยอัตโนมัติ
+    onChange={handleFileChange}
+  >
+    <Button icon={<UploadOutlined />}>แนบไฟล์</Button>
+  </Upload>
+</Form.Item>
+
 
     {/* ปุ่มบันทึก & ยกเลิก */}
     <Form.Item>

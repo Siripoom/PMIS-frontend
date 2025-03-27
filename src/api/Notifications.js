@@ -5,7 +5,7 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/notifications/all`;
 // ✅ ดึงข้อมูลการแจ้งเตือนจาก API
 export const getNotifications = async () => {
   try {
-    const response = await axios.get(API_BASE_URL, {
+    const response = await axios.get(API_URL, { // ใช้ API_URL ที่ถูกต้อง
       headers: {
         "ngrok-skip-browser-warning": "true",
         "Content-Type": "application/json",

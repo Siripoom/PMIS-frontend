@@ -5,7 +5,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import "../../styles/UserManagement.css";
 import Footer from "../../components/Footer/Footer";
-import { addUser, getAllUser, deleteUser, editUser } from "../../api/userManager"; // ✅ เพิ่ม getAllUsers
+import { addUser, getAllUsers, deleteUser, editUser } from "../../api/userManager"; // ✅ เพิ่ม getAllUsers
 
 
 const { Sider, Content } = Layout;
@@ -19,11 +19,12 @@ const UserManagement = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   // ✅ เปิด Modal แก้ไข
-const showEditModal = (user) => {
-  setEditingUser(user);
-  form.setFieldsValue(user); // ✅ ตั้งค่าข้อมูลที่มีอยู่เดิม
-  setIsEditModalVisible(true);
-};
+  const showEditModal = (user) => {
+    setEditingUser(user); // ตั้งค่าผู้ใช้ที่ต้องการแก้ไข
+    form.setFieldsValue(user); // ตั้งค่าฟอร์มด้วยข้อมูลของผู้ใช้
+    setIsEditModalVisible(true); // เปิด Modal แก้ไข
+  };
+  
 
 // ✅ ปิด Modal แก้ไข
 const handleCancelEdit = () => {
@@ -35,7 +36,7 @@ const handleCancelEdit = () => {
     setLoading(true);
     try {
       console.log("📢 กำลังดึงข้อมูลผู้ใช้จาก API...");
-      const response = await getAllUser(); // ✅ ดึงข้อมูลจาก API
+      const response = await getAllUsers(); // ✅ ดึงข้อมูลจาก API
   
       console.log("✅ API Response:", response.data); // 🔍 ตรวจสอบค่าที่ได้จาก API
   
@@ -96,42 +97,43 @@ const handleCancelEdit = () => {
   const handleAddUser = async (values) => {
     try {
       console.log("📢 กำลังส่งข้อมูลผู้ใช้ก่อนกรอง:", values);
-
-      // ✅ ลบ `confirmPassword` ออกก่อนส่งไปยัง API
+  
+      // ลบ confirmPassword ออกก่อนส่งไปยัง API
       const { confirmPassword, ...userData } = values;
-
+  
       console.log("✅ ข้อมูลที่ส่งไปยัง API:", userData);
-
-      // ✅ ส่งข้อมูลไปยัง API
+  
+      // ส่งข้อมูลไปยัง API
       const response = await addUser(userData);
       message.success("✅ เพิ่มผู้ใช้สำเร็จ!");
       console.log("✅ API Response:", response);
-
-      // ✅ ตรวจสอบว่า API ส่งข้อมูลที่ถูกต้อง
+  
+      // ตรวจสอบว่า API ส่งข้อมูลที่ถูกต้อง
       if (!response || !response.data) {
         message.error("❌ API ไม่ได้ส่งข้อมูลผู้ใช้กลับมา");
         return;
       }
-
-      // ✅ สร้าง Object ใหม่จาก API Response และเพิ่มเข้าไปที่ `users`
+  
+      // สร้าง Object ใหม่จาก API Response และเพิ่มเข้าไปที่ `users`
       const newUser = {
-        key: users.length + 1,  // ✅ ให้ key เป็น index ล่าสุด
-        id: response.data.user_id || response.data.id,  // ✅ ใช้ user_id จาก API
-        Username: response.data.username,
-        Email: response.data.email,
-        Role: response.data.role,
-        password: "********",  // ✅ ซ่อนรหัสผ่าน
+        key: users.length + 1, // ให้ key เป็น index ล่าสุด
+        id: response.data.user_id || response.data.id, // ใช้ user_id จาก API
+        username: response.data.username,
+        email: response.data.email,
+        role: response.data.role,
+        password: "********", // ซ่อนรหัสผ่าน
       };
-
-      // ✅ อัปเดต `users` โดยไม่ต้องโหลดใหม่จาก API
-      setUsers([...users, newUser]);
-
-      handleCancel(); // ✅ ปิด Modal และรีเซ็ตฟอร์ม
+  
+      // อัปเดต `users` โดยไม่ต้องโหลดใหม่จาก API
+      setUsers((prevUsers) => [...prevUsers, newUser]); // อัปเดต `State` โดยตรง
+  
+      handleCancel(); // ปิด Modal และรีเซ็ตฟอร์ม
     } catch (error) {
       console.error("❌ เพิ่มผู้ใช้ล้มเหลว:", error);
       message.error("❌ ไม่สามารถเพิ่มผู้ใช้ได้");
     }
-};
+  };
+  
 useEffect(() => {
   fetchUsers();
 }, []);
@@ -146,11 +148,13 @@ const handleDeleteUser = (userId) => {
       try {
         console.log(`🗑️ กำลังลบผู้ใช้ ID: ${userId}`);
 
-        await deleteUser(userId); // ✅ เรียก API เพื่อลบข้อมูล
-        message.success("✅ ลบผู้ใช้สำเร็จ!");
+        // เรียก API เพื่อลบผู้ใช้
+        await deleteUser(userId);
 
-        // ✅ อัปเดตตารางโดยลบแถวที่เกี่ยวข้อง
+        // อัปเดตสถานะผู้ใช้ใน React
         setUsers(users.filter(user => user.id !== userId));
+
+        message.success("✅ ลบผู้ใช้สำเร็จ!");
       } catch (error) {
         console.error("❌ ลบผู้ใช้ล้มเหลว:", error);
         message.error("❌ ไม่สามารถลบผู้ใช้ได้");
@@ -158,7 +162,6 @@ const handleDeleteUser = (userId) => {
     },
   });
 };
-
   // ✅ คอลัมน์ของตาราง
   const columns = [
     { title: "ลำดับ", dataIndex: "key", key: "key" }, 
@@ -236,6 +239,7 @@ const handleDeleteUser = (userId) => {
     <Select>
       <Option value="Admin">Admin</Option>
       <Option value="Manager">Manager</Option>
+      <Option value="Manager">User</Option>
     </Select>
   </Form.Item>
   <Form.Item name="password" label="Password" rules={[{ required: true, message: "กรุณากรอกรหัสผ่าน" }]}>
@@ -266,11 +270,11 @@ const handleDeleteUser = (userId) => {
   title="แก้ไขข้อมูลผู้ใช้"
   open={isEditModalVisible}
   onCancel={handleCancelEdit}
-  onOk={() => form.submit()}
+  onOk={() => form.submit()} // เมื่อกดปุ่มบันทึก, จะเรียก `onFinish`
   okText="บันทึก"
   cancelText="ยกเลิก"
 >
-  <Form form={form} layout="vertical" onFinish={handleEditUser}>
+  <Form form={form} layout="vertical" onFinish={handleEditUser}> {/* ส่งไปที่ handleEditUser */}
     <Form.Item name="username" label="Username" rules={[{ required: true, message: "กรุณากรอก Username" }]}>
       <Input />
     </Form.Item>
@@ -281,6 +285,7 @@ const handleDeleteUser = (userId) => {
       <Select>
         <Option value="Admin">Admin</Option>
         <Option value="Manager">Manager</Option>
+        <Option value="User">User</Option>
       </Select>
     </Form.Item>
     <Form.Item name="password" label="Password">
@@ -288,6 +293,8 @@ const handleDeleteUser = (userId) => {
     </Form.Item>
   </Form>
 </Modal>
+
+
 
     </Layout>
   );
