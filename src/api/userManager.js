@@ -7,7 +7,7 @@ export const getAllUsers = async () => {
   try {
     console.log("📢 Calling API to fetch all users");
     
-    const response = await axios.get(`${API_BASE_URL}/api/auth/users`, {
+    const response = await axios.get(`${API_BASE_URL}api/auth/users`, {
       headers: { "ngrok-skip-browser-warning": "skip-browser-warning" }
     });
 
@@ -24,7 +24,7 @@ export const addUser = async (userData) => {
   try {
     console.log("📢 Sending user data:", userData);
 
-    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, userData, {
+    const response = await axios.post(`${API_BASE_URL}api/auth/register`, userData, {
       headers: {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "skip-browser-warning",
@@ -45,7 +45,7 @@ export const deleteUser = async (userId) => {
     console.log(`🗑️ กำลังลบผู้ใช้ ID: ${userId}`);
 
     // แก้ไข URL โดยเพิ่มเครื่องหมาย '/' ระหว่าง API path และ userId
-    const response = await axios.delete(`${API_BASE_URL}/api/auth/users/${userId}`, {
+    const response = await axios.delete(`${API_BASE_URL}api/auth/users/${userId}`, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
       },
@@ -65,7 +65,7 @@ export const editUser = async (userId, updatedData) => {
   try {
     console.log(`✏️ กำลังแก้ไขข้อมูลผู้ใช้ ID: ${userId}`);
 
-    const response = await axios.put(`${API_BASE_URL}/api/auth/users/${userId}`, updatedData, {
+    const response = await axios.put(`${API_BASE_URL}api/auth/users/${userId}`, updatedData, {
       headers: {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "skip-browser-warning",

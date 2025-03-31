@@ -1,5 +1,7 @@
 import React from "react";
 import { message } from "antd"; // ✅ เพิ่มการนำเข้า message
+import { Table } from "antd"; // เพิ่มการ import Table
+
 import { Layout, Button, Input, Card } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { List } from "antd";
@@ -7,6 +9,7 @@ import  { useState,useEffect } from "react";
 import { Modal, Form } from "antd"; // ✅ นำเข้า Modal และ Form
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { getBudgetSummary,recordExpense } from "../../api/Budget"; // นำเข้า API
+import { getAllProjects } from "../../api/ProjectManage"; // ✅ นำเข้า API สำหรับโครงการ
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,35 +33,42 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 
 const { Sider, Content } = Layout;
 //Mock data ของโครงการต่างๆ
-const projectData = [
+const columns = [
   {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "07:00 AM",
+    title: "ชื่อโครงการ",
+    dataIndex: "project_name",  // ชื่อโปรเจค
+    key: "project_name",
   },
   {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "Yesterday, 04:00 PM",
+    title: "วันที่เริ่มต้น",
+    dataIndex: "start_date",  // วันที่เริ่มต้น
+    key: "start_date",
+    render: (start_date) => new Date(start_date).toLocaleDateString("th-TH"),
   },
   {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "August 1st 2022",
+    title: "วันที่สิ้นสุด",
+    dataIndex: "end_date",  // วันที่สิ้นสุด
+    key: "end_date",
+    render: (end_date) => new Date(end_date).toLocaleDateString("th-TH"),
   },
   {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "August 1st 2022",
+    title: "รายละเอียด",
+    key: "action",
+    render: (_, record) => (
+      <Button
+        type="link"
+        icon={<RightOutlined />}
+        onClick={() => console.log(record)}
+      >
+        ดูรายละเอียด
+      </Button>
+    ),
   },
-  {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "August 1st 2022",
-  },
-  {
-    title: "โครงการดำเนินการติดตั้ง",
-    time: "August 1st 2022",
-  }
 ];
 
 const Budget = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
+  const [projects, setProjects] = useState([]);
   const [budget, setBudget] = useState({
     projectName: "",
     total: 0,
@@ -71,63 +81,67 @@ const Budget = () => {
   });
 
   useEffect(() => {
-    const fetchBudget = async () => {
+    const fetchData = async () => {
       try {
         const storedBudget = JSON.parse(localStorage.getItem("budgetData"));
         if (storedBudget) {
           console.log("📌 Using cached budget data:", storedBudget);
           setBudget(storedBudget);
-          return;
+        } else {
+          const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167";
+          const response = await getBudgetSummary(projectId);
+  
+          if (!response || typeof response !== "object") {
+            console.error("❌ API response is incorrect:", response);
+            return;
+          }
+  
+          const totalBudget = Number(response.budget_total) || 0;
+          const spentAmount = Number(response.budget_spent) || 0;
+          let remainingBudget = Number(response.budget_remaining);
+  
+          if (isNaN(remainingBudget) || remainingBudget < 0) {
+            remainingBudget = Math.max(totalBudget - spentAmount, 0);  // กำหนดค่าเริ่มต้นให้ remainingBudget
+          }
+  
+          const budgetData = {
+            total: totalBudget,
+            spent: spentAmount,
+            remaining: remainingBudget,  // ให้ remainingBudget ถูกตั้งค่าก่อนใช้
+          };
+  
+          localStorage.setItem("budgetData", JSON.stringify(budgetData));
+          setBudget(budgetData);
+  
+          // อัปเดตข้อมูลกราฟเส้น
+          setLineData(prevData => ({
+            ...prevData,
+            datasets: [
+              {
+                ...prevData.datasets[0],
+                data: [...prevData.datasets[0].data, remainingBudget],
+              },
+              {
+                ...prevData.datasets[1],
+                data: [...prevData.datasets[1].data, spentAmount],
+              },
+            ],
+          }));
         }
-
-        const projectId = "0c0b73a9-507b-4ee8-a4f2-4f82455dd167";
-        const response = await getBudgetSummary(projectId);
-
-        if (!response || typeof response !== "object") {
-          console.error("❌ API response is incorrect:", response);
-          return;
-        }
-
-        const totalBudget = Number(response.budget_total) || 0;
-        const spentAmount = Number(response.budget_spent) || 0;
-        let remainingBudget = Number(response.budget_remaining);
-
-        if (isNaN(remainingBudget) || remainingBudget < 0) {
-          remainingBudget = Math.max(totalBudget - spentAmount, 0);
-        }
-
-        const budgetData = {
-          total: totalBudget,
-          spent: spentAmount,
-          remaining: remainingBudget,
-        };
-
-        // Store the fetched data in localStorage
-        localStorage.setItem("budgetData", JSON.stringify(budgetData));
-
-        setBudget(budgetData);
-
-        // Update line chart data dynamically
-        setLineData(prevData => ({
-          ...prevData,
-          datasets: [
-            {
-              ...prevData.datasets[0],
-              data: [...prevData.datasets[0].data, remainingBudget], // Add the remaining budget to the dataset
-            },
-            {
-              ...prevData.datasets[1],
-              data: [...prevData.datasets[1].data, spentAmount], // Add the spent amount to the dataset
-            },
-          ],
-        }));
+  
+        // ดึงข้อมูลโครงการทั้งหมด
+        const allProjects = await getAllProjects();
+        setProjects(allProjects);  // ตั้งค่า state สำหรับโครงการ
+  
       } catch (error) {
-        console.error("❌ Error fetching budget:", error);
+        console.error("❌ Error fetching data:", error);
       }
     };
-
-    fetchBudget();
+  
+    fetchData();
   }, []);
+  
+
   
   
   // ✅ เปิด-ปิด Modal บันทึกค่าใช้จ่าย
@@ -371,30 +385,25 @@ const Budget = () => {
           </Card>
         </Content>
         <Content className="budget-card-row">
-          <Card className="budget-card additional-info">
-            <p>รายการโครงการ</p>
-            <Button type="primary" shape="round" icon={<RightOutlined />} size="small" className="view-all-button">
-              View All
-            </Button>
-            <List
-              itemLayout="horizontal"
-              dataSource={projectData}
-              renderItem={(project) => (
-                <List.Item actions={[<RightOutlined key="view" />]}>
-                  <List.Item.Meta
-                    title={
-                      <span>
-                        {project.title} <span style={{ color: "#ccc" }}> _________________ </span>
-                      </span>
-                    }
-                    description={<span style={{ color: "#666" }}>{project.time}</span>}
-                  />
-                </List.Item>
-              )}
-            />
-           
-          </Card>
-        </Content>
+  <Card className="budget-card additional-info">
+    <p>รายการโครงการ</p>
+    <Button
+      type="primary"
+      shape="round"
+      icon={<RightOutlined />}
+      size="small"
+      className="view-all-button"
+    >
+      View All
+    </Button>
+    <Table
+      columns={columns}
+      dataSource={projects}  // ใช้ข้อมูลจาก `projects` ที่ดึงมาจาก API
+      rowKey="project_id"  // ใช้ `project_id` เป็น key สำหรับแต่ละแถว
+      pagination={false}  // หากไม่ต้องการให้แสดง pagination
+    />
+  </Card>
+</Content>
         <Modal
   title="บันทึกค่าใช้จ่าย"
   open={isExpenseModalVisible}

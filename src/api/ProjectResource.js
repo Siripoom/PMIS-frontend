@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/projectResource`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projectResource`;
 
 
 export const createResource = async (data) => {
@@ -17,6 +17,7 @@ export const createResource = async (data) => {
     throw error;
   }
 };
+
 
 export const getAllResources = async () => {
   try {

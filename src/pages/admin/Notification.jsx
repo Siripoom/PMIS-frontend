@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getNotifications } from "../../api/Notifications";
+import { getAllProjects, deleteProject} from "../../api/ProjectManage";
+import { getAllUsers } from "../../api/userManager";
 import { Layout, Card, List, Typography, Table, Badge, Button, message } from "antd";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
@@ -9,7 +11,6 @@ import moment from "moment";
 import "../../styles/Notification.css";
 
 const { Sider, Content } = Layout;
-
 const Notification = () => {
   const [projectNotifications, setProjectNotifications] = useState([]);
   const [notificationSummary, setNotificationSummary] = useState([]);
@@ -50,6 +51,39 @@ const Notification = () => {
     }
   };
   
+
+
+// ✅ ฟังก์ชันดึงข้อมูลการแจ้งเตือนความก้าวหน้าโครงการใส่ตารางกา
+useEffect(() => {
+  fetchProjectNotifications();
+}, []);
+
+// ฟังก์ชันดึงข้อมูลการแจ้งเตือนโครงการจาก API
+const fetchProjectNotifications = async () => {
+  try {
+    console.log("📢 กำลังโหลดข้อมูลการแจ้งเตือนโครงการ...");
+    const data = await getAllProjects(); // ดึงข้อมูลจาก API
+    const user = await getAllUsers(); // ดึงข้อมูลผู้ใช้จาก API
+    if (!data || !Array.isArray(data)) {
+      console.error("❌ ข้อมูลจาก API ผิดโครงสร้าง:", data);
+      throw new Error("❌ ข้อมูล API ไม่ถูกต้อง");
+    }
+
+    // จัดรูปแบบข้อมูล
+    const formattedProjectNotifications = data.map((project) => ({
+      username: user ? user.username : "ไม่พบข้อมูลผู้ใช้", // ใช้ `username` จากข้อมูลผู้ใช้
+      role: user ? user.role : "ไม่พบข้อมูล",             // ใช้ `role` จากข้อมูลผู้ใช้
+      status: project.status,  // แสดงสถานะของโครงการ
+    }));
+
+    setProjectNotifications(formattedProjectNotifications);
+  } catch (error) {
+    console.error("❌ เกิดข้อผิดพลาดขณะโหลดข้อมูลการแจ้งเตือนโครงการ:", error);
+    message.error("โหลดข้อมูลการแจ้งเตือนโครงการไม่สำเร็จ");
+  }
+};
+
+
   // ✅ ฟังก์ชันแปลง `created_at` เป็นรูปแบบที่อ่านง่าย
   const formatDate = (dateString) => {
     const date = moment(dateString);
@@ -63,9 +97,21 @@ const Notification = () => {
   };
 
   // ✅ คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
-  const columns = [
-    { title: "Username", dataIndex: "username", key: "username" },
-    { title: "Role", dataIndex: "role", key: "role" },
+  
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteProject(notificationId); // เรียกใช้ API เพื่อลบการแจ้งเตือน
+      message.success("ลบการแจ้งเตือนสำเร็จ");
+      fetchNotifications(); // รีเฟรชข้อมูลหลังจากลบ
+    } catch (error) {
+      console.error("❌ เกิดข้อผิดพลาดขณะลบการแจ้งเตือน:", error);
+      message.error("ลบการแจ้งเตือนไม่สำเร็จ");
+    }
+  };
+
+  const columns1 = [
+    { title: "Username", dataIndex: "username", key: "username" }, // แสดง username
+    { title: "Role", dataIndex: "role", key: "role" }, // แสดง role
     {
       title: "Status",
       dataIndex: "status",
@@ -90,69 +136,8 @@ const Notification = () => {
       ),
     },
   ];
-  // ✅ ฟังก์ชันโหลด Mock Data
-  const loadMockData = () => {
-    // 🔹 Mock Data สำหรับการแจ้งเตือนโครงการ
-    const mockProjectNotifications = [
-      {
-        notification_id: "1",
-        username: "admin",
-        role: "Project Manager",
-        status: "In Progress",
-        statusColor: "blue",
-      },
-      {
-        notification_id: "2",
-        username: "john_doe",
-        role: "Developer",
-        status: "Completed",
-        statusColor: "green",
-      },
-      {
-        notification_id: "3",
-        username: "jane_smith",
-        role: "QA Tester",
-        status: "Pending Review",
-        statusColor: "orange",
-      },
-    ];
-    
-    // 🔹 Mock Data สำหรับสรุปสถานะแจ้งเตือน
-    const mockNotificationSummary = [
-      { label: "Unread", count: 5, icon: <Badge color="blue" /> },
-      { label: "Read", count: 10, icon: <Badge color="green" /> },
-      { label: "Archived", count: 3, icon: <Badge color="gray" /> },
-    ];
 
-    // ✅ อัปเดต state ด้วย mock data
-    setProjectNotifications(mockProjectNotifications);
-    setNotificationSummary(mockNotificationSummary);
-  };
-
-  // ✅ คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
-  const colum2 = [
-    { title: "Username", dataIndex: "username", key: "username" },
-    { title: "Role", dataIndex: "role", key: "role" },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (text, record) => (
-        <span>
-          <Badge color={record.statusColor || "blue"} /> {text}
-        </span>
-      ),
-    },
-    {
-      title: "",
-      key: "action",
-      render: (_, record) => (
-        <Button type="link" danger>
-          ลบ <DeleteOutlined />
-        </Button>
-      ),
-    },
-  ];
+  
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
       <Sider width={220} style={{ background: "#001529" }}>
@@ -208,27 +193,27 @@ const Notification = () => {
             <div className="notification-bottom">
               {/* 🔹 การแจ้งเตือนความก้าวหน้าโครงการ */}
               <Card className="project-notification-card">
-                <div className="notification-header">
-                  <Typography.Title level={4} className="notification-title">
-                    การแจ้งเตือนความก้าวหน้าโครงการ
-                  </Typography.Title>
-                  <a href="/project-updates" className="view-all">
-                    View All <RightOutlined />
-                  </a>
-                </div>
+              <div className="notification-header">
+                <Typography.Title level={4} className="notification-title">
+                  การแจ้งเตือนความก้าวหน้าโครงการ
+                </Typography.Title>
+                <a href="/project-updates" className="view-all">
+                  View All <RightOutlined />
+                </a>
+              </div>
 
-                {projectNotifications.length === 0 ? (
-                  <Typography.Text type="secondary">
-                    ไม่มีข้อมูลการแจ้งเตือน
-                  </Typography.Text>
-                ) : (
-                  <Table
-                    columns={columns}
-                    dataSource={projectNotifications}
-                    pagination={false}
-                  />
-                )}
-              </Card>
+              {projectNotifications.length === 0 ? (
+                <Typography.Text type="secondary">
+                  ไม่มีข้อมูลการแจ้งเตือน
+                </Typography.Text>
+              ) : (
+                <Table
+                  columns={columns1}
+                  dataSource={projectNotifications}
+                  pagination={false}
+                />
+              )}
+            </Card>
 
               {/* 🔹 กล่องสรุปสถานะการแจ้งเตือน */}
               <Card className="notification-summary-card">
