@@ -2,6 +2,22 @@ import axios from "axios";
 // ดึงค่าจาก .env
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+
+export const getUserName = async (name) => {
+  try {
+    console.log("📢 Calling API to fetch user name");
+
+    const response = await axios.get(`${API_BASE_URL}api/auth/${name}`, {
+      headers: { "ngrok-skip-browser-warning": "skip-browser-warning" }
+    });
+
+    console.log("✅ API Response:", response.data);
+    return response.data || {};
+  } catch (error) {
+    console.error("❌ Error fetching user name:", error.response?.data || error.message);
+    return null;
+  }
+}
 // ฟังก์ชันดึงข้อมูลผู้ใช้ทั้งหมด
 export const getAllUsers = async () => {
   try {

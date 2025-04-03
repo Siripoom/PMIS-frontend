@@ -9,10 +9,28 @@ import {
   BellOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { useState, useEffect } from "react";
 import "./Sidebar.css";
 import logo from "../../../public/Logo.png";
+import { jwtDecode } from "jwt-decode";
 
 const Sidebar = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token"); // ดึง token จาก localStorage
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token); // ถอดรหัส token
+        setUser(decodedToken); // ตั้งค่าผู้ใช้
+        console.log(decodedToken);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, []);
+
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
@@ -20,54 +38,155 @@ const Sidebar = () => {
         <h2 className="logo-text">PMIS</h2>
       </div>
       <nav className="sidebar-nav">
-        <NavLink
-          to="/admin/dashboard"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <DashboardOutlined /> <span>Dashboard</span>
-        </NavLink>
-        <NavLink
-          to="/admin/project-management"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <EditOutlined /> <span>Project Management</span>
-        </NavLink>
-        <NavLink
-          to="/admin/project-progress"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <TableOutlined /> <span>Project Progress</span>
-        </NavLink>
-        <NavLink
-          to="/admin/resource-management"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <FileTextOutlined /> <span>Resource Management</span>
-        </NavLink>
-        <NavLink
-          to="/admin/budget"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <CheckCircleOutlined /> <span>Budget</span>
-        </NavLink>
-        <NavLink
-          to="/admin/report"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <ExclamationCircleOutlined /> <span>Report</span>
-        </NavLink>
-        <NavLink
-          to="/admin/notification"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <BellOutlined /> <span>Notification</span>
-        </NavLink>
-        <NavLink
-          to="/admin/user-management"
-          className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-        >
-          <UserOutlined /> <span>User Management</span>
-        </NavLink>
+        {/* เมนูสำหรับ Admin */}
+        {user && user.role === 'Admin' && (
+          <>
+            <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <DashboardOutlined /> <span>Dashboard</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <EditOutlined /> <span>Project Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-progress"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <TableOutlined /> <span>Project Progress</span>
+            </NavLink>
+            <NavLink
+              to="/admin/resource-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <FileTextOutlined /> <span>Resource Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/budget"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <CheckCircleOutlined /> <span>Budget</span>
+            </NavLink>
+            <NavLink
+              to="/admin/report"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <ExclamationCircleOutlined /> <span>Report</span>
+            </NavLink>
+            <NavLink
+              to="/admin/notification"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <BellOutlined /> <span>Notification</span>
+            </NavLink>
+            <NavLink
+              to="/admin/user-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <UserOutlined /> <span>User Management</span>
+            </NavLink>
+          </>
+        )}
+
+        {/* เมนูสำหรับ Manager */}
+        {user && user.role === 'Manager' && (
+          <>
+            <NavLink
+              to="/manager/dashboard"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <DashboardOutlined /> <span>Dashboard</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <EditOutlined /> <span>Project Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-progress"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <TableOutlined /> <span>Project Progress</span>
+            </NavLink>
+            <NavLink
+              to="/admin/resource-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <FileTextOutlined /> <span>Resource Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/budget"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <CheckCircleOutlined /> <span>Budget</span>
+            </NavLink>
+            <NavLink
+              to="/admin/report"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <ExclamationCircleOutlined /> <span>Report</span>
+            </NavLink>
+            <NavLink
+              to="/admin/notification"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <BellOutlined /> <span>Notification</span>
+            </NavLink>
+          </>
+        )}
+
+        {/* เมนูสำหรับ User */}
+        {user && user.role === 'User' && (
+          <>
+            <NavLink
+              to="/user/dashboard"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <DashboardOutlined /> <span>Dashboard</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <EditOutlined /> <span>Project Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/project-progress"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <TableOutlined /> <span>Project Progress</span>
+            </NavLink>
+            <NavLink
+              to="/admin/resource-management"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <FileTextOutlined /> <span>Resource Management</span>
+            </NavLink>
+            <NavLink
+              to="/admin/budget"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <CheckCircleOutlined /> <span>Budget</span>
+            </NavLink>
+            <NavLink
+              to="/admin/report"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <ExclamationCircleOutlined /> <span>Report</span>
+            </NavLink>
+            <NavLink
+              to="/admin/notification"
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            >
+              <BellOutlined /> <span>Notification</span>
+            </NavLink>
+          </>
+        )}
       </nav>
     </div>
   );

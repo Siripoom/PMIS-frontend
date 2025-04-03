@@ -45,7 +45,7 @@ const ProjectResource = () => {
 
 // ฟังก์ชันปิด Modal เมื่อกด "ยกเลิก"
 const handleCancel = () => {
-  setIsEditModalVisible(false); // ปิด Modal แก้ไขทรัพยากร
+  setIsModalVisible(false);  // ปิด Modal
   form.resetFields(); // รีเซ็ตฟอร์มเมื่อปิด Modal
 };
 
@@ -53,18 +53,18 @@ const handleCancel = () => {
 const handleForm = async (values) => {
   try {
     console.log("📢 ค่าที่ได้รับจากฟอร์ม:", values);
-
+ 
     const requestData = {
-      username: values.username?.trim() || "DefaultUser",
-      project_name: values.project_name?.trim() || "DefaultProject",
+      allocated_by: values.username?.trim() || "DefaultUser",
+      project_id: values.project_name?.trim() || "DefaultProject",
       resource_name: values.resource_name?.trim() || "ไม่ระบุ",
-      quantity: Number(values.quantity) || 0,
-      unit: values.category?.trim() || "ไม่ระบุ",
+      used_quantity: Number(values.quantity) || 0,
+      
     };
 
-    console.log("📢 ข้อมูลที่กำลังส่งไป API:", JSON.stringify(requestData));
+    
 
-    const response = await createResource(requestData);
+    const response = await createResourceProject(requestData);
 
     console.log("✅ API Response:", JSON.stringify(response, null, 2));
 
@@ -267,14 +267,16 @@ const fetchResourceHistory = async () => {
 
     // ตรวจสอบว่า data เป็น Array และแปลงข้อมูลให้อยู่ในรูปแบบที่ตารางต้องการ
     const formattedData = Array.isArray(data)
-      ? data.map((item, index) => ({
-          key: index,
-          username: item.username || "-",
-          project_name: item.project_name || "-",
-          resource_name: item.resource_name || "-",
-          unit: item.unit || "-",
-          quantity: item.quantity || 0,
-        }))
+      ? data.flatMap((item, index) =>
+          item.resource.map((res, resourceIndex) => ({
+            key: `${index}-${resourceIndex}`, // ทำให้ key เป็นเอกลักษณ์
+            allocated_by: item.allocated_by || "-",
+            project_name: item.project_name || "-",
+            resource_name: res.resource_name || "ไม่พบชื่อทรัพยากร", // เพิ่ม default value
+            unit: res.unit || "-",
+            quantity: res.used_quantity || 0, // ใช้ used_quantity จาก resource
+          }))
+        )
       : [];
 
     setHistoryData(formattedData); // อัปเดต state สำหรับตาราง
@@ -283,7 +285,6 @@ const fetchResourceHistory = async () => {
     message.error("❌ ไม่สามารถโหลดประวัติการเบิกทรัพยากรได้");
   }
 };
-
 
 const [categoryOptions, setCategoryOptions] = useState([
   { label: "อุปกรณ์ IT", value: "อุปกรณ์ IT" },
@@ -327,16 +328,17 @@ const [categoryOptions, setCategoryOptions] = useState([
     },
   ];
   
-
   // คอลัมน์ของตารางประวัติการเบิกทรัพยากร
   const historyColumns = [
-    { title: "ชื่อผู้ใช้", dataIndex: "username" },
+    { title: "ชื่อผู้ใช้", dataIndex: "allocated_by" },
     { title: "โครงการ", dataIndex: "project_name" },
     { title: "เบิกทรัพยากร", dataIndex: "resource_name" },
     { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
-
+  
   ];
+  
+  
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
@@ -447,7 +449,7 @@ const [categoryOptions, setCategoryOptions] = useState([
       </Button>
       <Button onClick={handleCancel} className="ml-2">ยกเลิก</Button>
     </Form.Item>
-  </Form>
+  </Form> 
 </Modal>
 
 <Modal

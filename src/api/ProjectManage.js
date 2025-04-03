@@ -1,6 +1,6 @@
   import axios from "axios";
 
-  const API_URL = `${import.meta.env.VITE_API_URL}api/projects`;
+  const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projects`;
 
   // ✅ ดึงข้อมูลโครงการทั้งหมด
   export const getAllProjects = async () => {
