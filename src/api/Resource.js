@@ -1,7 +1,6 @@
 import axios from "axios";
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/resource`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projectResource`;
 
-/// Function to create a  resource
 
 export const createResource = async (data) => {
   try {

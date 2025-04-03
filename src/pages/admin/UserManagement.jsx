@@ -121,7 +121,7 @@ const handleCancelEdit = () => {
         username: response.data.username,
         email: response.data.email,
         role: response.data.role,
-        password: "********", // ซ่อนรหัสผ่าน
+        password: response.data.password || "********", // ซ่อนรหัสผ่าน  
       };
   
       // อัปเดต `users` โดยไม่ต้องโหลดใหม่จาก API

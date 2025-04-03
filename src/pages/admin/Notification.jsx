@@ -59,30 +59,86 @@ useEffect(() => {
 }, []);
 
 // ฟังก์ชันดึงข้อมูลการแจ้งเตือนโครงการจาก API
-const fetchProjectNotifications = async () => {
+// 🔹 ดึงข้อมูล Project ทั้งหมด
+const fetchProjectData = async () => {
   try {
-    console.log("📢 กำลังโหลดข้อมูลการแจ้งเตือนโครงการ...");
-    const data = await getAllProjects(); // ดึงข้อมูลจาก API
-    const user = await getAllUsers(); // ดึงข้อมูลผู้ใช้จาก API
-    if (!data || !Array.isArray(data)) {
-      console.error("❌ ข้อมูลจาก API ผิดโครงสร้าง:", data);
-      throw new Error("❌ ข้อมูล API ไม่ถูกต้อง");
+    const projects = await getAllProjects();
+    if (!Array.isArray(projects)) {
+      throw new Error("ข้อมูลโครงการไม่ใช่ array");
     }
-
-    // จัดรูปแบบข้อมูล
-    const formattedProjectNotifications = data.map((project) => ({
-      username: user ? user.username : "ไม่พบข้อมูลผู้ใช้", // ใช้ `username` จากข้อมูลผู้ใช้
-      role: user ? user.role : "ไม่พบข้อมูล",             // ใช้ `role` จากข้อมูลผู้ใช้
-      status: project.status,  // แสดงสถานะของโครงการ
-    }));
-
-    setProjectNotifications(formattedProjectNotifications);
+    return projects;
   } catch (error) {
-    console.error("❌ เกิดข้อผิดพลาดขณะโหลดข้อมูลการแจ้งเตือนโครงการ:", error);
-    message.error("โหลดข้อมูลการแจ้งเตือนโครงการไม่สำเร็จ");
+    console.error("❌ Error fetching project data:", error);
+    return [];
   }
 };
 
+// 🔹 ดึงข้อมูล User ทั้งหมด
+const fetchUserData = async () => {
+  try {
+    const rawUsers = await getAllUsers();
+    const users = Array.isArray(rawUsers.data)
+      ? rawUsers.data
+      : [];
+    
+
+    return users;
+  } catch (error) {
+    console.error("❌ Error fetching user data:", error);
+    return [];
+  }
+};
+
+const fetchProjectNotifications = async () => {
+  try {
+    const [projects, usersRaw] = await Promise.all([
+      fetchProjectData(),
+      fetchUserData()
+    ]);
+
+    const users = Array.isArray(usersRaw)
+      ? usersRaw
+      : usersRaw?.users || [];
+
+    // ✅ ผู้ใช้ที่ไม่มีโครงการ
+    const usersWithoutProjects = users.filter(
+      (user) => !projects.some((project) => project.created_by === user.user_id)
+    );
+
+    // ✅ ผู้ใช้ที่มีโครงการ
+    const formattedWithProject = projects.map((project, index) => {
+      const matchedUser = users.find((u) => u.user_id === project.created_by);
+      return {
+        key: project.id || index,
+        projectId: project.id || "-",
+        projectName: project.name || "-",
+        username: matchedUser?.username || "ไม่พบผู้ใช้",
+        role: matchedUser?.role || "-",
+        status: project.status || "ไม่ระบุสถานะ",
+        notification_id: project.id // สำหรับลบ
+      };
+    });
+
+    // ✅ เพิ่มผู้ใช้ที่ไม่มีโครงการ
+    const formattedWithoutProject = usersWithoutProjects.map((user, index) => ({
+      key: `no-project-${index}`,
+      projectId: "-",
+      projectName: "ไม่มีโครงการ",
+      username: user.username,
+      role: user.role,
+      status: "ไม่มีโครงการ",
+      notification_id: null
+    }));
+
+    // 🔗 รวมทั้งหมดเข้าด้วยกัน
+    const allFormatted = [...formattedWithProject, ...formattedWithoutProject];
+    setProjectNotifications(allFormatted);
+
+  } catch (error) {
+    console.error("❌ Error fetching project notifications:", error);
+    message.error("โหลดข้อมูลการแจ้งเตือนโครงการไม่สำเร็จ");
+  }
+};
 
   // ✅ ฟังก์ชันแปลง `created_at` เป็นรูปแบบที่อ่านง่าย
   const formatDate = (dateString) => {
@@ -100,18 +156,20 @@ const fetchProjectNotifications = async () => {
   
   const handleDeleteNotification = async (notificationId) => {
     try {
-      await deleteProject(notificationId); // เรียกใช้ API เพื่อลบการแจ้งเตือน
+      await deleteProject(notificationId); // ลบจาก API
       message.success("ลบการแจ้งเตือนสำเร็จ");
-      fetchNotifications(); // รีเฟรชข้อมูลหลังจากลบ
+      fetchNotifications(); // โหลดการแจ้งเตือนใหม่
+      fetchProjectNotifications(); // โหลดข้อมูลตารางใหม่ด้วย
     } catch (error) {
       console.error("❌ เกิดข้อผิดพลาดขณะลบการแจ้งเตือน:", error);
       message.error("ลบการแจ้งเตือนไม่สำเร็จ");
     }
   };
+  
 
   const columns1 = [
-    { title: "Username", dataIndex: "username", key: "username" }, // แสดง username
-    { title: "Role", dataIndex: "role", key: "role" }, // แสดง role
+    { title: "Username", dataIndex: "username", key: "username" },
+    { title: "Role", dataIndex: "role", key: "role" },
     {
       title: "Status",
       dataIndex: "status",
@@ -122,21 +180,8 @@ const fetchProjectNotifications = async () => {
         </span>
       ),
     },
-    {
-      title: "",
-      key: "action",
-      render: (_, record) => (
-        <Button
-          type="link"
-          danger
-          onClick={() => handleDeleteNotification(record.notification_id)}
-        >
-          ลบ <DeleteOutlined />
-        </Button>
-      ),
-    },
   ];
-
+  
   
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>

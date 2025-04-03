@@ -51,19 +51,7 @@ const columns = [
     key: "end_date",
     render: (end_date) => new Date(end_date).toLocaleDateString("th-TH"),
   },
-  {
-    title: "รายละเอียด",
-    key: "action",
-    render: (_, record) => (
-      <Button
-        type="link"
-        icon={<RightOutlined />}
-        onClick={() => console.log(record)}
-      >
-        ดูรายละเอียด
-      </Button>
-    ),
-  },
+
 ];
 
 const Budget = () => {

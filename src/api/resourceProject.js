@@ -1,9 +1,9 @@
 import axios from "axios";
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/resource`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projectResource`;
 
 /// Function to create a  resource
 
-export const createResource = async (data) => {
+export const createResourceProject = async (data) => {
   try {
     const response = await axios.post(API_URL, data, {
       headers: {
@@ -20,7 +20,7 @@ export const createResource = async (data) => {
 };
 
 
-export const getAllResources = async () => {
+export const getAllResourcesProject = async () => {
   try {
    
   
@@ -42,7 +42,7 @@ export const getAllResources = async () => {
 };
 
 
-export const getResourceById = async (id) => {
+export const getResourceByIdProject = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/${id}`);
     return response.data;
@@ -52,7 +52,7 @@ export const getResourceById = async (id) => {
   }
 };
 
-export const updateResource = async (id, data) => {
+export const updateResourceProject = async (id, data) => {
   try {
     const response = await axios.put(`${API_URL}/${id}`, data);
     return response.data;
@@ -62,7 +62,7 @@ export const updateResource = async (id, data) => {
   }
 };
 
-export const deleteResource = async (resource_id) => {
+export const deleteResourceProject = async (resource_id) => {
   try {
     console.log(`📢 กำลังส่งคำขอลบ projectResource ID: ${resource_id} ไปยัง API`);
     await axios.delete(`${API_URL}/${resource_id}`);
@@ -75,7 +75,7 @@ export const deleteResource = async (resource_id) => {
   }
 };
 
-export const useResource = async (data) => {
+export const useResourceProject = async (data) => {
   try {
     const response = await axios.post(`${API_URL}/use`, data, {
       headers: {
