@@ -201,7 +201,7 @@ const handleEditSubmit = async (values) => {
   }
 };
 
-
+// เพิ่มทรัพยากรใหม่
 const handleAddResource = async () => {
   try {
     const values = await formAdd.validateFields();
@@ -255,6 +255,34 @@ const showEditModal = (record) => {
   setIsEditModalVisible(true); // เปิด Modal
 };
 
+useEffect(() => {
+  fetchResources();         // ดึงรายการทรัพยากรหลัก
+  fetchResourceHistory();   // ดึงประวัติการเบิกทรัพยากร
+}, []);
+
+const fetchResourceHistory = async () => {
+  try {
+    const data = await getAllResourcesProject(); // ดึงข้อมูลจาก API
+    console.log("📦 ประวัติการเบิกทรัพยากรจาก API:", data);
+
+    // ตรวจสอบว่า data เป็น Array และแปลงข้อมูลให้อยู่ในรูปแบบที่ตารางต้องการ
+    const formattedData = Array.isArray(data)
+      ? data.map((item, index) => ({
+          key: index,
+          username: item.username || "-",
+          project_name: item.project_name || "-",
+          resource_name: item.resource_name || "-",
+          unit: item.unit || "-",
+          quantity: item.quantity || 0,
+        }))
+      : [];
+
+    setHistoryData(formattedData); // อัปเดต state สำหรับตาราง
+  } catch (error) {
+    console.error("❌ ดึงข้อมูลประวัติการเบิกล้มเหลว:", error);
+    message.error("❌ ไม่สามารถโหลดประวัติการเบิกทรัพยากรได้");
+  }
+};
 
 
 const [categoryOptions, setCategoryOptions] = useState([
@@ -265,7 +293,7 @@ const [categoryOptions, setCategoryOptions] = useState([
 ]);
 
 
-  // คอลัมน์ของตาราง
+  // คอลัมน์ของตารางทรัพยากร
   const columns = [
     {
       title: "ลำดับ",
