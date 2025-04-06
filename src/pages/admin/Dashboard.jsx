@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import Footer from "../../components/Footer/Footer";
 const { Sider, Content } = Layout;
-
+import { Chart } from "react-google-charts";
 const projects = [
   {
     name: "โครงการ A",
@@ -211,7 +211,7 @@ const Dashboard = () => {
           </div>
         </Content>
         {/* Footer สุดน่ารักของเรา */}
-        <Footer /> 
+        <Footer />
       </Layout>
     </Layout>
   );

@@ -19,11 +19,8 @@ export const createResource = async (data) => {
   }
 };
 
-
 export const getAllResources = async () => {
   try {
-   
-  
     const response = await axios.get(API_URL, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
@@ -31,16 +28,18 @@ export const getAllResources = async () => {
       },
       timeout: 5000, // Timeout 5 วินาที
     });
-  
+
     console.log("✅ API Response (Raw Data):", response.data);
-  
-  return response.data
+
+    return response.data;
   } catch (error) {
-    console.error("❌ Error fetching resources:", error.response?.data || error.message);
+    console.error(
+      "❌ Error fetching resources:",
+      error.response?.data || error.message
+    );
     return [];
   }
 };
-
 
 export const getResourceById = async (id) => {
   try {
@@ -64,7 +63,9 @@ export const updateResource = async (id, data) => {
 
 export const deleteResource = async (resource_id) => {
   try {
-    console.log(`📢 กำลังส่งคำขอลบ projectResource ID: ${resource_id} ไปยัง API`);
+    console.log(
+      `📢 กำลังส่งคำขอลบ projectResource ID: ${resource_id} ไปยัง API`
+    );
     await axios.delete(`${API_URL}/${resource_id}`);
 
     console.log("✅ ลบ projectResource สำเร็จ");

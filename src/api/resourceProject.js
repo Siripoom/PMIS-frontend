@@ -4,6 +4,7 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projectResource`;
 /// Function to create a  resource
 
 export const createResourceProject = async (data) => {
+  const { project_id, resource_id, use_quantity, allocated_by } = data;
   try {
     const response = await axios.post(API_URL, data, {
       headers: {
@@ -19,11 +20,8 @@ export const createResourceProject = async (data) => {
   }
 };
 
-
 export const getAllResourcesProject = async () => {
   try {
-   
-  
     const response = await axios.get(API_URL, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
@@ -31,16 +29,18 @@ export const getAllResourcesProject = async () => {
       },
       timeout: 5000, // Timeout 5 วินาที
     });
-  
+
     console.log("✅ API Response (Raw Data):", response.data);
-  
-  return response.data
+
+    return response.data;
   } catch (error) {
-    console.error("❌ Error fetching resources:", error.response?.data || error.message);
+    console.error(
+      "❌ Error fetching resources:",
+      error.response?.data || error.message
+    );
     return [];
   }
 };
-
 
 export const getResourceByIdProject = async (id) => {
   try {
@@ -64,7 +64,9 @@ export const updateResourceProject = async (id, data) => {
 
 export const deleteResourceProject = async (resource_id) => {
   try {
-    console.log(`📢 กำลังส่งคำขอลบ projectResource ID: ${resource_id} ไปยัง API`);
+    console.log(
+      `📢 กำลังส่งคำขอลบ projectResource ID: ${resource_id} ไปยัง API`
+    );
     await axios.delete(`${API_URL}/${resource_id}`);
 
     console.log("✅ ลบ projectResource สำเร็จ");

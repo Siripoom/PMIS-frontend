@@ -1,4 +1,3 @@
-import React from "react";
 import "./Footer.css";
 import logo from "../../../public/Logo.png";
 const Footer = () => {
@@ -12,7 +11,8 @@ const Footer = () => {
             <span className="footer-brand">PMIS</span>
           </div>
           <p className="footer-text">
-            Our vision is to provide convenience and help increase your sales business.
+            Our vision is to provide convenience and help increase your sales
+            business.
           </p>
           {/* Social Icons */}
           <div className="footer-socials">
@@ -32,10 +32,18 @@ const Footer = () => {
         <div className="footer-section">
           <h3 className="footer-title">About</h3>
           <ul className="footer-list">
-            <li><a href="#">How it works</a></li>
-            <li><a href="#">Featured</a></li>
-            <li><a href="#">Partnership</a></li>
-            <li><a href="#">Business Relation</a></li>
+            <li>
+              <a href="#">How it works</a>
+            </li>
+            <li>
+              <a href="#">Featured</a>
+            </li>
+            <li>
+              <a href="#">Partnership</a>
+            </li>
+            <li>
+              <a href="#">Business Relation</a>
+            </li>
           </ul>
         </div>
 
@@ -43,10 +51,18 @@ const Footer = () => {
         <div className="footer-section">
           <h3 className="footer-title">Community</h3>
           <ul className="footer-list">
-            <li><a href="#">Events</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Podcast</a></li>
-            <li><a href="#">Invite a friend</a></li>
+            <li>
+              <a href="#">Events</a>
+            </li>
+            <li>
+              <a href="#">Blog</a>
+            </li>
+            <li>
+              <a href="#">Podcast</a>
+            </li>
+            <li>
+              <a href="#">Invite a friend</a>
+            </li>
           </ul>
         </div>
 
@@ -54,10 +70,18 @@ const Footer = () => {
         <div className="footer-section">
           <h3 className="footer-title">Socials</h3>
           <ul className="footer-list">
-            <li><a href="#">Discord</a></li>
-            <li><a href="#">Instagram</a></li>
-            <li><a href="#">Twitter</a></li>
-            <li><a href="#">Facebook</a></li>
+            <li>
+              <a href="#">Discord</a>
+            </li>
+            <li>
+              <a href="#">Instagram</a>
+            </li>
+            <li>
+              <a href="#">Twitter</a>
+            </li>
+            <li>
+              <a href="#">Facebook</a>
+            </li>
           </ul>
         </div>
       </div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login"; // นำเข้าไฟล์ Login
 import Dashboard from "./pages/admin/Dashboard";
@@ -13,7 +12,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/auth/login" element={<Login />} /> {/* หน้า Login */}
+        <Route path="/" element={<Login />} /> {/* หน้า Login */}
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route
           path="/admin/project-management"
