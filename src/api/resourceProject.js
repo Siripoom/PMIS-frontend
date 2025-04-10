@@ -5,6 +5,7 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/projectResource`;
 
 export const createResourceProject = async (data) => {
   const { project_id, resource_id, use_quantity, allocated_by } = data;
+  
   try {
     const response = await axios.post(API_URL, data, {
       headers: {
