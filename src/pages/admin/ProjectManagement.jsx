@@ -144,7 +144,7 @@ const ProjectManagement = () => {
 
   const columns = [
   { title: "เลือก", dataIndex: "select", render: () => <Checkbox /> },
-  { title: "ชื่อผู้สร้าง", dataIndex: "project_name" },
+  { title: "ชื่อโครงการ", dataIndex: "project_name" },
   { title: "รายละเอียด", dataIndex: "description" },
   { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() }, 
   { 
