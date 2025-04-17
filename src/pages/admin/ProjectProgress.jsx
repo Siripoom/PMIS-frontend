@@ -1,61 +1,35 @@
-import { Layout, Card, List, Avatar, Row, Col, Badge, Tag } from "antd";
+import { Layout, Card, List, Avatar, Tag } from "antd";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
 import "../../styles/ProjectProgress.css";
 import Footer from "../../components/Footer/Footer";
 import { Chart } from "react-google-charts";
+import { getAllProjects} from "../../api/ProjectManage";
+import { useEffect, useState } from "react";
 
 const { Sider, Content } = Layout;
 
-// Function to convert days to milliseconds for Gantt chart
-function daysToMilliseconds(days) {
-  return days * 24 * 60 * 60 * 1000;
-}
 
-// Sample updates data
-const updates = [
-  {
-    user: "John Doe",
-    text: "Completed Requirements Analysis for Project Alpha",
-    date: "2025-04-05",
-  },
-  {
-    user: "Jane Smith",
-    text: "Backend Development is in-progress for Project Beta",
-    date: "2025-04-04",
-  },
-  {
-    user: "Mike Johnson",
-    text: "User Testing is delayed for Project Gamma",
-    date: "2025-04-03",
-  },
-  {
-    user: "Sara Williams",
-    text: "UI Design is in todo list for Project Delta",
-    date: "2025-04-02",
-  },
-];
-
-// Project status data with task names matching status categories
-const projectStatus = [
-  { name: "Requirements Analysis", status: "Complete", dueDate: "Apr 5, 2025" },
-  {
-    name: "Backend Development",
-    status: "In-progress",
-    dueDate: "Apr 8, 2025",
-  },
-  {
-    name: "Frontend Development",
-    status: "In-progress",
-    dueDate: "Apr 12, 2025",
-  },
-  { name: "UI Design", status: "Todo", dueDate: "Apr 15, 2025" },
-  { name: "Documentation", status: "Todo", dueDate: "Apr 18, 2025" },
-  { name: "User Testing", status: "Delay", dueDate: "Apr 10, 2025" },
-];
 
 const ProjectProgress = () => {
-  // Gantt chart data definition with matching task names
+  const [projectData, setProjectData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const projects = await getAllProjects();
+        setProjectData(projects);
+      } catch (error) {
+        console.error("❌ Failed to load project data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   const columns = [
     { type: "string", label: "Task ID" },
     { type: "string", label: "Task Name" },
@@ -66,67 +40,20 @@ const ProjectProgress = () => {
     { type: "string", label: "Dependencies" },
   ];
 
-  // Each row represents a task with names matching the status categories
-  const rows = [
-    [
-      "Requirements",
-      "Requirements Analysis",
-      new Date(2025, 3, 1),
-      new Date(2025, 3, 5),
-      null,
-      100,
-      null,
-    ],
-    [
-      "BackendDev",
-      "Backend Development",
-      new Date(2025, 3, 6),
-      new Date(2025, 3, 8),
-      null,
-      70,
-      "Requirements",
-    ],
-    [
-      "FrontendDev",
-      "Frontend Development",
-      new Date(2025, 3, 6),
-      new Date(2025, 3, 12),
-      null,
-      25,
-      "Requirements",
-    ],
-    [
-      "UIDesign",
-      "UI Design",
-      new Date(2025, 3, 13),
-      new Date(2025, 3, 15),
+  const ganttRows = projectData
+    .filter(item => item.start_date && item.end_date)
+    .map((item, index) => [
+      `Task${index + 1}`,
+      item.project_name || `Project ${index + 1}`,
+      new Date(item.start_date),
+      new Date(item.end_date),
       null,
       0,
-      "FrontendDev",
-    ],
-    [
-      "Documentation",
-      "Documentation",
-      new Date(2025, 3, 16),
-      new Date(2025, 3, 18),
       null,
-      0,
-      "UIDesign",
-    ],
-    [
-      "UserTesting",
-      "User Testing",
-      new Date(2025, 3, 8),
-      new Date(2025, 3, 10),
-      null,
-      50,
-      "BackendDev",
-    ],
-  ];
+    ]);
 
-  const data = [columns, ...rows];
+  const data = [columns, ...ganttRows];
 
-  // Chart options
   const options = {
     height: 400,
     gantt: {
@@ -136,31 +63,71 @@ const ProjectProgress = () => {
         stroke: "#e64a19",
         strokeWidth: 2,
       },
-      palette: [
-        {
-          color: "#5e97f6",
-          dark: "#2a56c6",
-          light: "#c9d7f8",
-        },
-      ],
+      palette: [{ color: "#5e97f6", dark: "#2a56c6", light: "#c9d7f8" }],
+    },
+    timeline: {
+      showRowLabels: true,
+      showBarLabels: false,
+    },
+    hAxis: {
+      format: 'MMM d, yyyy',
     },
   };
 
-  // Function to render status tags with appropriate colors
-  const getStatusTag = (status) => {
-    switch (status) {
-      case "Todo":
-        return <Tag color="blue">Todo</Tag>;
-      case "In-progress":
-        return <Tag color="green">In-progress</Tag>;
-      case "Delay":
-        return <Tag color="red">Delay</Tag>;
-      case "Complete":
-        return <Tag color="purple">Complete</Tag>;
+  const getCardStyle = (status) => {
+    const lowerStatus = status?.toLowerCase();
+    return {
+      backgroundColor:
+        lowerStatus === "complete" || lowerStatus === "เสร็จสิ้น"
+          ? "#f3e8ff"
+          : lowerStatus === "in-progress" || lowerStatus === "กำลังดำเนินการ"
+          ? "#e8f5e9"
+          : lowerStatus === "delay" || lowerStatus === "ล่าช้า"
+          ? "#ffebee"
+          : lowerStatus === "todo" || lowerStatus === "ยังไม่เริ่ม"
+          ? "#e3f2fd"
+          : "#ffffff",
+  
+      borderLeft:
+        lowerStatus === "complete" || lowerStatus === "เสร็จสิ้น"
+          ? "6px solid #9c27b0"
+          : lowerStatus === "in-progress" || lowerStatus === "กำลังดำเนินการ"
+          ? "6px solid #4caf50"
+          : lowerStatus === "delay" || lowerStatus === "ล่าช้า"
+          ? "6px solid #f44336"
+          : lowerStatus === "todo" || lowerStatus === "ยังไม่เริ่ม"
+          ? "6px solid #2196f3"
+          : "6px solid #d9d9d9",
+  
+      borderRadius: "12px",
+      padding: "16px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+      minHeight: "100px",
+    };
+  };
+  
+  
+
+  const getTagColor = (status) => {
+    switch (status.toLowerCase()) {
+      case "complete":
+      case "เสร็จสิ้น":
+        return "purple";
+      case "in-progress":
+      case "กำลังดำเนินการ":
+        return "green";
+      case "delay":
+      case "ล่าช้า":
+        return "red";
+      case "todo":
+      case "ยังไม่เริ่ม":
+        return "blue";
       default:
-        return <Tag>Unknown</Tag>;
+        return "default";
     }
   };
+  
+  
 
   return (
     <Layout style={{ minHeight: "100vh", display: "flex" }}>
@@ -170,64 +137,35 @@ const ProjectProgress = () => {
 
       <Layout>
         <Header title="Project Management" />
-
         <Content className="projectProgress-container">
-          {/* Status Line Card */}
-          <Card
-            className="status-card"
-            title={
-              <div className="status-header">
-                <span className="status-title">Project Tasks Status</span>
-                <div className="status-legend">
-                  <Badge color="blue" text="Todo" />
-                  <Badge color="green" text="In-progress" />
-                  <Badge color="red" text="Delay" />
-                  <Badge color="purple" text="Complete" />
-                </div>
-              </div>
-            }
-            style={{ marginBottom: 16 }}
-          >
-            <List
-              grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
-              dataSource={projectStatus}
-              renderItem={(item) => (
-                <List.Item>
-                  <Card
-                    size="small"
-                    className="task-card"
-                    style={{
-                      borderLeft:
-                        item.status === "Complete"
-                          ? "4px solid purple"
-                          : item.status === "In-progress"
-                          ? "4px solid green"
-                          : item.status === "Delay"
-                          ? "4px solid red"
-                          : "4px solid blue",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.09)",
-                    }}
-                  >
-                    <div style={{ fontWeight: "bold" }}>{item.name}</div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginTop: 8,
-                      }}
-                    >
-                      {getStatusTag(item.status)}
-                      <span style={{ fontSize: "0.85rem", color: "#888" }}>
-                        Due: {item.dueDate}
-                      </span>
-                    </div>
-                  </Card>
-                </List.Item>
-              )}
-            />
+          {/* ✅ รายงานความคืบหน้า */}
+          <Card title="รายงานความคืบหน้าของโครงการ" style={{ marginBottom: 24 }}>
+          <List
+  loading={loading}
+  grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
+  dataSource={projectData}
+  renderItem={(item) => (
+    <List.Item>
+      {/* ✅ ใช้ getCardStyle() อย่างถูกต้อง */}
+      <div style={getCardStyle(item.status)}>
+        <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+          {item.project_name || "No Title"}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+          <Tag color={getTagColor(item.status)}>
+            {item.status || "Unknown"}
+          </Tag>
+          <span style={{ fontSize: "0.85rem", color: "#555" }}>
+            Due: {item.createdAt ? new Date(item.createdAt).toLocaleDateString("en-GB") : "-"}
+          </span>
+        </div>
+      </div>
+    </List.Item>
+  )}
+/>
           </Card>
 
-          {/* Gantt Chart */}
+          {/* ✅ Timeline */}
           <Card className="calendar-card" title="Project Timeline">
             <Chart
               chartType="Gantt"
@@ -235,29 +173,39 @@ const ProjectProgress = () => {
               height="400px"
               data={data}
               options={options}
+              loader={<div>Loading Project Timeline...</div>}
             />
           </Card>
 
-          {/* Latest Updates */}
+          {/* ✅ Updates */}
           <Card className="update-card">
-            <h2>อัปเดตล่าสุดของแต่ละโครงการ</h2>
-            <List
-              dataSource={updates}
-              renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${item.user}`}
-                      />
-                    }
-                    title={item.user}
-                    description={`${item.text} - ${item.date}`}
-                  />
-                </List.Item>
-              )}
+  <h2>อัปเดตล่าสุดของแต่ละโครงการ</h2>
+  <List
+    loading={loading}
+    dataSource={projectData}
+    renderItem={(item) => (
+      <List.Item>
+        <List.Item.Meta
+          avatar={
+            <Avatar
+              src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${item.username || "user"}`}
             />
-          </Card>
+          }
+          title={item.project_name|| "ไม่ระบุ"}
+          description={`สถานะ: ${item.status || "ไม่ทราบ"} • วันที่: ${item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "-"
+          }`}
+        />
+      </List.Item>
+    )}
+  />
+</Card>
+
         </Content>
         <Footer />
       </Layout>

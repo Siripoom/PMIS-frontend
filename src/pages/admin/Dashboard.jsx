@@ -5,53 +5,15 @@ import "../../styles/Dashboard.css";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import Footer from "../../components/Footer/Footer";
+import { useEffect, useState } from "react";
+import { getAllProjects } from "../../api/ProjectManage";
+import { getAllUsers } from "../../api/userManager";
+import { getBudgetSummary } from "../../api/Budget";
+import dayjs from "dayjs";
+import "dayjs/locale/th"; // เพิ่ม locale ภาษาไทย
+dayjs.locale("th"); // ตั้งค่าภาษาไทย
+
 const { Sider, Content } = Layout;
-import { Chart } from "react-google-charts";
-const projects = [
-  {
-    name: "โครงการ A",
-    status: "ดำเนินการ",
-    progress: 70,
-    owner: "สมชาย ใจดี",
-  },
-  {
-    name: "โครงการ B",
-    status: "เสร็จสิ้น",
-    progress: 100,
-    owner: "สมหญิง ขยัน",
-  },
-  {
-    name: "โครงการ C",
-    status: "รอดำเนินการ",
-    progress: 20,
-    owner: "สมปอง ตั้งใจ",
-  },
-  // สามารถเพิ่มโครงการเพิ่มเติมได้
-];
-
-const statusData = [
-  { name: "กำลังดำเนินการ", value: 53, color: "#007bff" },
-  { name: "วางแผนไว้", value: 21, color: "#A0A0A0" },
-  { name: "เสร็จสิ้น", value: 17, color: "#28a745" },
-  { name: "ล่าช้า", value: 9, color: "#dc3545" },
-];
-
-const budgetData = [
-  { month: "Jan", thisMonth: 4000, lastMonth: 2400 },
-  { month: "Feb", thisMonth: 3000, lastMonth: 1398 },
-  { month: "Mar", thisMonth: 5000, lastMonth: 9800 },
-  { month: "Apr", thisMonth: 2780, lastMonth: 3908 },
-  { month: "May", thisMonth: 1890, lastMonth: 4800 },
-  { month: "Jun", thisMonth: 2390, lastMonth: 3800 },
-  { month: "Jul", thisMonth: 3490, lastMonth: 4300 },
-];
-const projectData = [
-  { key: 1, name: "โครงการ A", startDate: "2023-01-15" },
-  { key: 2, name: "โครงการ B", startDate: "2023-03-10" },
-  { key: 3, name: "โครงการ C", startDate: "2023-05-22" },
-  { key: 4, name: "โครงการ D", startDate: "2023-07-30" },
-  { key: 5, name: "โครงการ E", startDate: "2023-09-12" },
-];
 
 const projectColumns = [
   {
@@ -64,9 +26,15 @@ const projectColumns = [
     title: "วันที่เริ่มโครงการ",
     dataIndex: "startDate",
     key: "startDate",
-    render: (text) => <span className="text-gray-500">{text}</span>,
-  },
+    render: (text) => (
+      <span className="text-gray-500">
+        {dayjs(text).add(543, "year").format("D MMMM YYYY")}
+      </span>
+    ),
+  }
+  
 ];
+
 const statusColumns = [
   {
     title: "สถานะ",
@@ -90,18 +58,137 @@ const statusColumns = [
   },
   {
     title: "จำนวน",
+    dataIndex: "count",
     key: "count",
-    render: (_, record) => (
-      <span className="text-gray-700">
-        {Math.round((record.value / 100) * 50)} โครงการ
-      </span>
-    ),
+    render: (count) => <span className="text-gray-700">{count} โครงการ</span>,
   },
 ];
+
 const Dashboard = () => {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [budgetSummaries, setBudgetSummaries] = useState([]);
+
+  useEffect(() => {
+    const fetchBudgets = async (projects) => {
+      try {
+        const allBudgets = await Promise.all(
+          projects.map(async (proj) => {
+            const summary = await getBudgetSummary(proj.project_id);
+            return {
+              total: Number(summary.budget_total) || 0,
+              spent: Number(summary.budget_spent) || 0,
+              remaining: Number(summary.budget_remaining) || 0,
+            };
+          })
+        );
+
+        console.log("📦 งบประมาณทั้งหมด (แบบย่อ):", allBudgets);
+        setBudgetSummaries(allBudgets);
+      } catch (error) {
+        console.error("❌ ดึงงบประมาณล้มเหลว:", error);
+      }
+    };
+
+    const fetchProjects = async () => {
+      setLoading(true);
+      const projectData = await getAllProjects();
+      const userData = await getAllUsers();
+
+      const updatedProjects = projectData.map((proj) => {
+        const user = (userData.data || []).find((u) => u.user_id === proj.created_by);
+        return {
+          ...proj,
+          username: user ? user.username : "ไม่ระบุ",
+        };
+      });
+
+      setProjects(updatedProjects);
+      setUsers(userData.data || []);
+
+      await fetchBudgets(updatedProjects);
+      setLoading(false);
+    };
+
+    fetchProjects();
+  }, []);
+
+  const getUsernameById = (userId) => {
+    if (!Array.isArray(users)) return "ไม่ระบุ";
+    const user = users.find((u) => u.user_id === userId);
+    return user ? user.username : "ไม่ระบุ";
+  };
+
+  const getProgressPercent = (status) => {
+    switch (status) {
+      case "Planned":
+        return 25;
+      case "In Progress":
+        return 50;
+      case "Completed":
+      case "Delayed":
+        return 100;
+      default:
+        return 0;
+    }
+  };
+
+  const getProgressColor = (status) => {
+    switch (status) {
+      case "Delayed":
+        return "#dc3545";
+      case "Completed":
+        return "#28a745";
+      default:
+        return "#007bff";
+    }
+  };
+
+  const getProjectStatusSummary = (projects) => {
+    const statusCount = {
+      Planned: 0,
+      "In Progress": 0,
+      Completed: 0,
+      Delayed: 0,
+    };
+
+    projects.forEach((project) => {
+      if (statusCount[project.status] !== undefined) {
+        statusCount[project.status]++;
+      }
+    });
+
+    const total = projects.length;
+
+    return Object.entries(statusCount).map(([status, count]) => {
+      const statusNameMap = {
+        Planned: "วางแผนไว้",
+        "In Progress": "กำลังดำเนินการ",
+        Completed: "เสร็จสิ้น",
+        Delayed: "ล่าช้า",
+      };
+
+      const colorMap = {
+        Planned: "#A0A0A0",
+        "In Progress": "#007bff",
+        Completed: "#28a745",
+        Delayed: "#dc3545",
+      };
+
+      return {
+        name: statusNameMap[status],
+        value: total > 0 ? Math.round((count / total) * 100) : 0,
+        color: colorMap[status],
+        count,
+      };
+    });
+  };
+
+  const statusData = getProjectStatusSummary(projects);
+
   return (
     <Layout className="min-h-screen flex">
-      {/* Sidebar */}
       <Sider width={220} className="hidden lg:block">
         <Sidebar />
       </Sider>
@@ -114,29 +201,36 @@ const Dashboard = () => {
             <h2 className="text-xl font-semibold mb-6">
               ข้อมูลด้านบริหารจัดการโครงการ
             </h2>
-            <Row gutter={[16, 16]} justify="center">
-              {projects.map((project, index) => (
-                <Col xs={24} sm={12} md={8} lg={6} key={index}>
-                  <Card
-                    title={project.name}
-                    bordered={false}
-                    className="rounded-xl shadow-sm bg-white"
-                  >
-                    <p className="text-gray-700">
-                      <strong>สถานะ:</strong> {project.status}
-                    </p>
-                    <p className="text-gray-700">
-                      <strong>ผู้รับผิดชอบ:</strong> {project.owner}
-                    </p>
-                    <Progress
-                      percent={project.progress}
-                      status={project.progress === 100 ? "success" : "active"}
-                    />
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+
+            {loading ? (
+              <p>⏳ กำลังโหลดข้อมูลโครงการ...</p>
+            ) : (
+              <Row gutter={[16, 16]} justify="center">
+                {projects.map((project, index) => (
+                  <Col xs={24} sm={12} md={8} lg={6} key={index}>
+                    <Card
+                      title={`โครงการ ${project.project_name}`}
+                      bordered={false}
+                      className="rounded-xl shadow-sm bg-white"
+                    >
+                      <p className="text-gray-700">
+                        <strong>สถานะ:</strong> {project.status}
+                      </p>
+                      <p className="text-gray-700">
+                        <strong>ผู้รับผิดชอบ:</strong> {getUsernameById(project.created_by)}
+                      </p>
+                      <Progress
+                        percent={getProgressPercent(project.status)}
+                        strokeColor={getProgressColor(project.status)}
+                        status={project.status === "Completed" ? "success" : undefined}
+                      />
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            )}
           </div>
+
           <div className="mt-6">
             <Row gutter={[16, 16]} justify="center" align="top">
               <Col xs={24} lg={12}>
@@ -177,23 +271,26 @@ const Dashboard = () => {
               <Col xs={24} lg={12}>
                 <div className="bg-white p-6 rounded-2xl shadow-lg">
                   <h2 className="text-xl font-semibold mb-6">งบประมาณ</h2>
-                  <BarChart width={600} height={300} data={budgetData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="thisMonth" fill="#00bfff" name="เดือนนี้" />
-                    <Bar
-                      dataKey="lastMonth"
-                      fill="#ffa500"
-                      name="เดือนที่แล้ว"
-                    />
-                  </BarChart>
+                  <BarChart
+  width={600}
+  height={300}
+  data={budgetSummaries}
+  barCategoryGap={40}  // ช่องว่างระหว่างหมวด
+  barGap={5}            // ช่องว่างระหว่างแท่งในหมวดเดียวกัน
+>
+  <CartesianGrid strokeDasharray="3 3" />
+  <XAxis dataKey="total" />
+  <YAxis />
+  <Tooltip />
+  <Legend />
+  <Bar dataKey="spent" fill="#00bfff" name="ใช้ไป" barSize={30} />
+  <Bar dataKey="remaining" fill="#ffa500" name="คงเหลือ" barSize={30} />
+</BarChart>
                 </div>
               </Col>
             </Row>
           </div>
+
           <div className="mt-6">
             <Row gutter={[16, 16]} justify="center" align="top">
               <Col xs={24}>
@@ -201,7 +298,11 @@ const Dashboard = () => {
                   <h2 className="text-xl font-semibold mb-6">ข้อมูลโครงการ</h2>
                   <Table
                     columns={projectColumns}
-                    dataSource={projectData}
+                    dataSource={projects.map((proj, index) => ({
+                      key: index,
+                      name: proj.project_name,
+                      startDate: proj.start_date,
+                    }))}
                     pagination={{ pageSize: 5 }}
                     bordered
                   />
@@ -210,7 +311,6 @@ const Dashboard = () => {
             </Row>
           </div>
         </Content>
-        {/* Footer สุดน่ารักของเรา */}
         <Footer />
       </Layout>
     </Layout>
