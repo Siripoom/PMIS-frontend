@@ -36,3 +36,19 @@ export const recordExpense = async (expenseData) => {
     throw error;
   }
 };
+
+export const allBudgets = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/all`, {
+      headers: {
+        "ngrok-skip-browser-warning": "skip-browser-warning",
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching all budgets:", error.response?.data || error);
+    throw error;
+  }
+}

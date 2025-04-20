@@ -31,6 +31,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
 const token = localStorage.getItem("token");
 const decoded = jwtDecode(token);
 
@@ -107,42 +108,45 @@ const Budget = () => {
     try {
       // ดึงข้อมูลโครงการทั้งหมด
       const allProjects = await getAllProjects();
+      console.log("📊 ข้อมูลโครงการทั้งหมด:", allProjects);
 
       const budgetPromises = allProjects.map(async (project) => {
-        // ดึงข้อมูลงบประมาณจาก API
         const summary = await getBudgetSummary(project.project_id);
-
-        // ดึงข้อมูลจาก response และแปลงเป็นค่าใหม่
+      
+        // รวมค่า amount ทั้งหมดจาก expenses
+        const totalSpent = Array.isArray(summary.expenses)
+          ? summary.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
+          : 0;
+      
         return {
           projectId: project.project_id,
           projectName: project.project_name,
-          totalBudget: Number(summary.amount || 0), // งบประมาณทั้งหมด
-          spentAmount: Number(summary.spent || 0), // จำนวนเงินที่ใช้ไป
-          remainingBudget:
-            Number(summary.amount || 0) - Number(summary.spent || 0), // คำนวณงบประมาณคงเหลือ
+          totalBudget: Number(project.budget || 0), // ✅ ใช้ project.budget
+          spentAmount: totalSpent, // ✅ ใช้ amount รวมจาก expenses
+          remainingBudget: Math.max(Number(project.budget || 0) - totalSpent, 0),
           description: summary.description || "",
-          spentAt: summary.spent_at, // เวลาที่ใช้จ่าย
-          spentBy: summary.spent_by, // ผู้ใช้ที่ทำการใช้จ่าย
+          spentAt: summary.spent_at,
+          spentBy: summary.spent_by,
         };
       });
+      
 
       // รอจนกระทั่งข้อมูลทั้งหมดถูกดึงมา
       const allBudgets = await Promise.all(budgetPromises);
 
       // คำนวณผลรวมของงบประมาณที่ใช้ไป และงบประมาณคงเหลือ
-      const totalSpent = allBudgets.reduce(
-        (sum, budget) => sum + budget.spentAmount,
-        0
-      );
+      const totalSpent = allBudgets.reduce((sum, b) => sum + b.spentAmount, 0);
       const totalRemaining = allBudgets.reduce(
         (sum, budget) => sum + budget.remainingBudget,
         0
       );
-      const totalBudget = allBudgets.reduce(
-        (sum, budget) => sum + budget.totalBudget,
+
+      const totalBudget = allProjects.reduce(
+        (sum, project) => sum + Number(project.budget || 0),
         0
       );
 
+      
       // อัพเดตข้อมูลโครงการและงบประมาณ
       setProjects(allProjects);
       setBudget({
@@ -162,6 +166,10 @@ const Budget = () => {
   }, []);
 
   const showExpenseModal = () => setIsExpenseModalVisible(true);
+  form.setFieldsValue({
+    budget_total: budget.total || 0, // 👈 เอาค่าจากการ์ดมาใส่ตรงนี้
+
+  });
   const handleExpenseCancel = () => setIsExpenseModalVisible(false);
 
   const handleExpenseSubmit = async (values) => {
@@ -192,6 +200,9 @@ const Budget = () => {
       );
     }
   };
+
+  
+  
 
   const barData = {
     labels: ["โครงการ 1", "โครงการ 2", "โครงการ 3", "โครงการ 4"],
@@ -256,41 +267,46 @@ const Budget = () => {
               </Button>
             </div>
 
-            {/* สรุปงบประมาณ */}
-            <div className="budget-summary grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card
-                className="budget-card budget-used"
-                style={{ backgroundColor: "#FFD700" }}
-              >
-                <p>งบประมาณที่ใช้ไป</p>
-                <h3>{budget.spent.toLocaleString() || "0"} บาท</h3>
-              </Card>
+ {/* สรุปงบประมาณ */}
+<div className="budget-summary grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* งบประมาณที่ใช้ไป */}
+  <Card
+  className="budget-card budget-used"
+  style={{ backgroundColor: "#FFD700" }}
+>
+  <p>งบประมาณที่ใช้ไป</p>
+  <h3>{budget.spent.toLocaleString() || "0"} บาท</h3> {/* ✅ ใช้ total_spent ที่เก็บไว้ใน state */}
+</Card>
 
-              <Card
-                className="budget-card budget-remaining"
-                style={{
-                  backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500",
-                }}
-              >
-                <p>งบประมาณคงเหลือ</p>
-                <h3>{budget.remaining.toLocaleString() || "0"} บาท</h3>
-              </Card>
-            </div>
 
-            <div className="budget-total-wrapper mt-4">
-              <Card
-                className="budget-card budget-total"
-                style={{ backgroundColor: "#808080" }}
-              >
-                <p>งบประมาณทั้งหมด</p>
-                <h3>
-                  {budget.total !== undefined
-                    ? budget.total.toLocaleString()
-                    : "0"}{" "}
-                  บาท
-                </h3>
-              </Card>
-            </div>
+  {/* งบประมาณคงเหลือ */}
+  <Card
+    className="budget-card budget-remaining"
+    style={{
+      backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500", // ถ้างบประมาณคงเหลือลบให้ใช้สีที่แตกต่าง
+    }}
+  >
+    <p>งบประมาณคงเหลือ</p>
+    <h3>{budget.remaining.toLocaleString() || "0"} บาท</h3> {/* แสดงงบประมาณคงเหลือ */}
+  </Card>
+</div>
+
+{/* งบประมาณทั้งหมด */}
+<div className="budget-total-wrapper mt-4">
+  <Card
+    className="budget-card budget-total"
+    style={{ backgroundColor: "#808080" }}
+  >
+    <p>งบประมาณทั้งหมด</p>
+    <h3>
+      {budget.total !== undefined
+        ? budget.total.toLocaleString()
+        : "0"}{" "}
+      บาท
+    </h3>
+  </Card>
+</div>
+
 
             {/* ช่องค้นหา */}
             <div className="budget-search-container">
@@ -315,6 +331,7 @@ const Budget = () => {
             </div>
           </Card>
         </Content>
+
         <Content className="budget-card-row">
           <Card className="budget-card additional-info">
             <p>รายการโครงการ</p>
@@ -342,7 +359,20 @@ const Budget = () => {
           onCancel={handleExpenseCancel}
           footer={null} // ไม่มี Footer เพื่อให้ควบคุมปุ่มได้ใน Form
         >
-          <Form form={form} layout="vertical" onFinish={handleExpenseSubmit}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleExpenseSubmit}
+            onValuesChange={(changedValues, allValues) => {
+              // คำนวณงบประมาณคงเหลือทุกครั้งเมื่อกรอกข้อมูลใหม่
+              if (changedValues.budget_total || changedValues.budget_spent) {
+                const total = Number(allValues.budget_total) || 0;
+                const spent = Number(allValues.budget_spent) || 0;
+                const remaining = Math.max(total - spent, 0); // ป้องกันค่าติดลบ
+                form.setFieldsValue({ budget_remaining: remaining });
+              }
+            }}
+          >
             {/* ✅ ชื่อโครงการ */}
             <Form.Item
               label="ชื่อโครงการ"
@@ -365,9 +395,7 @@ const Budget = () => {
             <Form.Item
               label="งบประมาณที่ใช้ไปของโครงการ"
               name="budget_spent"
-              rules={[
-                { required: true, message: "กรุณากรอกจำนวนเงินที่ใช้ไป" },
-              ]}
+              rules={[{ required: true, message: "กรุณากรอกจำนวนเงินที่ใช้ไป" }]}
             >
               <Input type="number" placeholder="0.00" suffix="บาท" />
             </Form.Item>

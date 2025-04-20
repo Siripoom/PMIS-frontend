@@ -10,8 +10,8 @@ import { getAllProjects } from "../../api/ProjectManage";
 import { getAllUsers } from "../../api/userManager";
 import { getBudgetSummary } from "../../api/Budget";
 import dayjs from "dayjs";
-import "dayjs/locale/th"; // เพิ่ม locale ภาษาไทย
-dayjs.locale("th"); // ตั้งค่าภาษาไทย
+import "dayjs/locale/th";
+dayjs.locale("th");
 
 const { Sider, Content } = Layout;
 
@@ -31,8 +31,7 @@ const projectColumns = [
         {dayjs(text).add(543, "year").format("D MMMM YYYY")}
       </span>
     ),
-  }
-  
+  },
 ];
 
 const statusColumns = [
@@ -66,52 +65,64 @@ const statusColumns = [
 
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [budgetSummaries, setBudgetSummaries] = useState([]);
+  const [budget, setBudget] = useState({ total: 0, spent: 0, remaining: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBudgets = async (projects) => {
+    const fetchAllData = async () => {
       try {
-        const allBudgets = await Promise.all(
-          projects.map(async (proj) => {
-            const summary = await getBudgetSummary(proj.project_id);
-            return {
-              total: Number(summary.budget_total) || 0,
-              spent: Number(summary.budget_spent) || 0,
-              remaining: Number(summary.budget_remaining) || 0,
-            };
-          })
-        );
+        const projectData = await getAllProjects();
+        const userData = await getAllUsers();
 
-        console.log("📦 งบประมาณทั้งหมด (แบบย่อ):", allBudgets);
+        const updatedProjects = projectData.map((proj) => {
+          const user = (userData.data || []).find((u) => u.user_id === proj.created_by);
+          return {
+            ...proj,
+            username: user ? user.username : "ไม่ระบุ",
+          };
+        });
+
+        setProjects(updatedProjects);
+        setUsers(userData.data || []);
+
+        const budgetPromises = updatedProjects.map(async (project) => {
+          const summary = await getBudgetSummary(project.project_id);
+
+          const totalSpent = Array.isArray(summary.expenses)
+            ? summary.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
+            : 0;
+
+          return {
+            projectId: project.project_id,
+            projectName: project.project_name,
+            totalBudget: Number(project.budget || 0),
+            spent: totalSpent,
+            remaining: Math.max(Number(project.budget || 0) - totalSpent, 0),
+          };
+        });
+
+        const allBudgets = await Promise.all(budgetPromises);
         setBudgetSummaries(allBudgets);
-      } catch (error) {
-        console.error("❌ ดึงงบประมาณล้มเหลว:", error);
+
+        const totalSpent = allBudgets.reduce((sum, b) => sum + b.spent, 0);
+        const totalRemaining = allBudgets.reduce((sum, b) => sum + b.remaining, 0);
+        const totalBudget = allBudgets.reduce((sum, b) => sum + b.totalBudget, 0);
+
+        setBudget({
+          total: totalBudget,
+          spent: totalSpent,
+          remaining: totalRemaining,
+        });
+      } catch (err) {
+        console.error("❌ Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchProjects = async () => {
-      setLoading(true);
-      const projectData = await getAllProjects();
-      const userData = await getAllUsers();
-
-      const updatedProjects = projectData.map((proj) => {
-        const user = (userData.data || []).find((u) => u.user_id === proj.created_by);
-        return {
-          ...proj,
-          username: user ? user.username : "ไม่ระบุ",
-        };
-      });
-
-      setProjects(updatedProjects);
-      setUsers(userData.data || []);
-
-      await fetchBudgets(updatedProjects);
-      setLoading(false);
-    };
-
-    fetchProjects();
+    fetchAllData();
   }, []);
 
   const getUsernameById = (userId) => {
@@ -198,9 +209,7 @@ const Dashboard = () => {
 
         <Content className="dashboard-container p-6 text-center">
           <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-semibold mb-6">
-              ข้อมูลด้านบริหารจัดการโครงการ
-            </h2>
+            <h2 className="text-xl font-semibold mb-6">ข้อมูลด้านบริหารจัดการโครงการ</h2>
 
             {loading ? (
               <p>⏳ กำลังโหลดข้อมูลโครงการ...</p>
@@ -272,20 +281,20 @@ const Dashboard = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-lg">
                   <h2 className="text-xl font-semibold mb-6">งบประมาณ</h2>
                   <BarChart
-  width={600}
-  height={300}
-  data={budgetSummaries}
-  barCategoryGap={40}  // ช่องว่างระหว่างหมวด
-  barGap={5}            // ช่องว่างระหว่างแท่งในหมวดเดียวกัน
->
-  <CartesianGrid strokeDasharray="3 3" />
-  <XAxis dataKey="total" />
-  <YAxis />
-  <Tooltip />
-  <Legend />
-  <Bar dataKey="spent" fill="#00bfff" name="ใช้ไป" barSize={30} />
-  <Bar dataKey="remaining" fill="#ffa500" name="คงเหลือ" barSize={30} />
-</BarChart>
+                    width={600}
+                    height={300}
+                    data={budgetSummaries}
+                    barCategoryGap={40}
+                    barGap={5}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="projectName" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="spent" fill="#00bfff" name="ใช้ไป" barSize={30} />
+                    <Bar dataKey="remaining" fill="#ffa500" name="คงเหลือ" barSize={30} />
+                  </BarChart>
                 </div>
               </Col>
             </Row>

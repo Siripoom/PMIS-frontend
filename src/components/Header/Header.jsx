@@ -28,7 +28,7 @@ const Header = ({ title }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     setUser(null);
-    navigate("/auth/login");
+    navigate("/");
   };
 
   const menu = (
