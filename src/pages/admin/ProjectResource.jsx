@@ -401,7 +401,7 @@ const ProjectResource = () => {
             <button type="primary" className="custom-search-button">
               ค้นหา
             </button>
-            {role === "Admin" || role === "Manager" ? (
+            {role === "Admin" ? (
   <>
     <Button
       type="primary"
