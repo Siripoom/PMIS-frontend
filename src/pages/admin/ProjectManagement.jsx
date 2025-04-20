@@ -39,6 +39,7 @@ const statusMapping = {
 };
 
 const ProjectManagement = () => {
+  const role = localStorage.getItem("role");
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalState, setModalState] = useState({ visible: false, edit: false, data: null });
@@ -143,52 +144,66 @@ const ProjectManagement = () => {
   };
 
   const columns = [
-  { title: "เลือก", dataIndex: "select", render: () => <Checkbox /> },
-  { title: "ชื่อโครงการ", dataIndex: "project_name" },
-  { title: "รายละเอียด", dataIndex: "description" },
-  { title: "งบประมาณ (บาท)", dataIndex: "budget", render: (text) => text?.toLocaleString() }, 
-  { 
-    title: "สถานะ", 
-    dataIndex: "status", 
-    render: (text) => statusMapping[text] || text, // Map status to Thai
-  },
-  { 
-    title: "วันที่เริ่มต้น", 
-    dataIndex: "start_date", 
-    render: (text) => (text ? text.split("T")[0] : "ไม่ระบุ") 
-  },
-  { 
-    title: "วันที่สิ้นสุด", 
-    dataIndex: "end_date",  
-    render: (text) => (text ? text.split("T")[0] : "ไม่ระบุ") 
-  },
-  {
-    title: "เอกสารแนบ",
-    dataIndex: "document",
-    render: (file) => file ? <a href={file} target="_blank" rel="noopener noreferrer">เปิดไฟล์</a> : "ไม่มีไฟล์"
-  },
-  { 
-    title: "จัดการ",
-    render: (_, record) => (
-      <div className="flex space-x-2">
-        {/* ปุ่มแก้ไข */}
-        <Button 
-          type="text" 
-          icon={<EditOutlined />} 
-          onClick={() => showEditModal(record)} 
-        />
-        
-        {/* ปุ่มลบ พร้อม Confirm */}
-        <Button 
-          type="text" 
-          icon={<DeleteOutlined />} 
-          danger
-          onClick={() => confirmDelete(record.project_id)} 
-        />
-      </div>
-    ),
-  },
-];
+    { title: "เลือก", dataIndex: "select", render: () => <Checkbox /> },
+    { title: "ชื่อโครงการ", dataIndex: "project_name" },
+    { title: "รายละเอียด", dataIndex: "description" },
+    {
+      title: "งบประมาณ (บาท)",
+      dataIndex: "budget",
+      render: (text) => text?.toLocaleString(),
+    },
+    {
+      title: "สถานะ",
+      dataIndex: "status",
+      render: (text) => statusMapping[text] || text,
+    },
+    {
+      title: "วันที่เริ่มต้น",
+      dataIndex: "start_date",
+      render: (text) => (text ? text.split("T")[0] : "ไม่ระบุ"),
+    },
+    {
+      title: "วันที่สิ้นสุด",
+      dataIndex: "end_date",
+      render: (text) => (text ? text.split("T")[0] : "ไม่ระบุ"),
+    },
+    {
+      title: "เอกสารแนบ",
+      dataIndex: "document",
+      render: (file) =>
+        file ? (
+          <a href={file} target="_blank" rel="noopener noreferrer">
+            เปิดไฟล์
+          </a>
+        ) : (
+          "ไม่มีไฟล์"
+        ),
+    },
+    // 👇 เงื่อนไขในการแสดงคอลัมน์จัดการเฉพาะ role ไม่ใช่ manager
+    ...(role !== "Manager" && role !== "User"
+      ? [
+          {
+            title: "จัดการ",
+            render: (_, record) => (
+              <div className="flex space-x-2">
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={() => showEditModal(record)}
+                />
+                <Button
+                  type="text"
+                  icon={<DeleteOutlined />}
+                  danger
+                  onClick={() => confirmDelete(record.project_id)}
+                />
+              </div>
+            ),
+          },
+        ]
+      : []),
+  ];
+  
   
 const confirmDelete = (projectId) => {
   Modal.confirm({
@@ -224,7 +239,13 @@ const handleDeleteProject = async (id) => {
           <div className="bg-white p-4 shadow-md rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">การจัดการโครงการ</h2>
-              <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>เพิ่มโครงการ</Button>
+              {role !== "Manager" && role !== "User" && (
+  <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
+    เพิ่มโครงการ
+  </Button>
+)}
+
+
             </div>
             {loading ? <Spin size="large" /> : <Table columns={columns} dataSource={projects} rowKey="project_id" pagination={{ pageSize: 5 }} />}
           </div>

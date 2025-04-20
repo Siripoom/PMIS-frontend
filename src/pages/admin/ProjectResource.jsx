@@ -47,6 +47,7 @@ const ProjectResource = () => {
   const [formAdd] = Form.useForm();
   const [loading, setLoading] = useState(false); // ✅ เพิ่มตัวแปร state
   const [isEditModalVisible, setIsEditModalVisible] = useState(false); // เปิด/ปิด Modal
+  const role = localStorage.getItem("role"); // 👈 ดึง role ของผู้ใช้
 
   useEffect(() => {
     fetchResources();
@@ -335,34 +336,39 @@ const ProjectResource = () => {
     {
       title: "ลำดับ",
       dataIndex: "index",
-      render: (_, __, index) => index + 1, // ✅ แสดงลำดับจาก index ใน dataSource
+      render: (_, __, index) => index + 1,
     },
     { title: "ชื่อทรัพยากร", dataIndex: "resource_name" },
     { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
-    {
-      title: "จัดการ",
-      render: (_, record) => (
-        <div className="action-buttons">
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key, record.resource_id)}
-          >
-            ลบ
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => showEditModal(record)}
-          >
-            แก้ไข
-          </Button>
-        </div>
-      ),
-    },
+    ...(role !== "Manager" && role !== "User" // ตรวจสอบว่าเป็นผู้ใช้ทั่วไปหรือไม่
+      ? [
+          {
+            title: "จัดการ",
+            render: (_, record) => (
+              <div className="action-buttons">
+                <Button
+                  type="link"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => handleDelete(record.key, record.resource_id)}
+                >
+                  ลบ
+                </Button>
+                <Button
+                  type="link"
+                  icon={<EditOutlined />}
+                  onClick={() => showEditModal(record)}
+                >
+                  แก้ไข
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
+  
 
   // คอลัมน์ของตารางประวัติการเบิกทรัพยากร
   const historyColumns = [
@@ -395,20 +401,27 @@ const ProjectResource = () => {
             <button type="primary" className="custom-search-button">
               ค้นหา
             </button>
-            <Button
-              type="primary"
-              className="resources-button"
-              onClick={showModal}
-            >
-              เบิกทรัพยากร
-            </Button>
-            <Button
-              type="primary"
-              className="add-resorces"
-              onClick={showAddResourceModal}
-            >
-              เพิ่มทรัพยากร
-            </Button>
+            {role === "Admin" || role === "Manager" ? (
+  <>
+    <Button
+      type="primary"
+      className="resources-button"
+      onClick={showModal}
+    >
+      เบิกทรัพยากร
+    </Button>
+
+    <Button
+      type="primary"
+      className="add-resorces"
+      onClick={showAddResourceModal}
+    >
+      เพิ่มทรัพยากร
+    </Button>
+  </>
+) : null}
+
+
           </div>
           {/* Modal สำหรับเบิกทรัพยากร */}
           <Modal

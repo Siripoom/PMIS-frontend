@@ -32,8 +32,13 @@ ChartJS.register(
   Legend
 );
 
-const token = localStorage.getItem("token");
-const decoded = jwtDecode(token);
+//const token = localStorage.getItem("token");
+//const decoded = jwtDecode(token);
+const role = localStorage.getItem("role");
+
+
+
+
 
 const { Sider, Content } = Layout;
 const columns = [
@@ -258,14 +263,18 @@ const Budget = () => {
 
             {/* ปุ่มบันทึก */}
             <div className="budget-actions">
-              <Button
-                icon={<PlusOutlined />}
-                className="budget-expense-button "
-                onClick={showExpenseModal}
-              >
-                บันทึกค่าใช้จ่าย
-              </Button>
-            </div>
+            {role === "Admin" && (
+  <Button
+    icon={<PlusOutlined />}
+    className="budget-expense-button"
+    onClick={showExpenseModal}
+  >
+    บันทึกค่าใช้จ่าย
+  </Button>
+)}
+
+</div>
+
 
  {/* สรุปงบประมาณ */}
 <div className="budget-summary grid grid-cols-1 md:grid-cols-2 gap-4">
