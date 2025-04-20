@@ -70,9 +70,12 @@ const ProjectResource = () => {
 
   // ฟังก์ชันปิด Modal แก้ไขทรัพยากร เมื่อกด "ยกเลิก"
   const handleCancel = () => {
-    setIsEditModalVisible(false); // ปิด Modal
-    form.resetFields(); // รีเซ็ตฟอร์มเมื่อปิด Modal
+    setIsModalVisible(false); // ✅ ปิด modal เบิกทรัพยากร
+    setIsEditModalVisible(false); // ✅ ปิด modal แก้ไข (ถ้ามีการแชร์ฟังก์ชัน)
+    form.resetFields(); // ✅ รีเซ็ตฟอร์ม
   };
+  
+  
 
 
   const handleForm = async (values) => {
