@@ -5,10 +5,19 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/notifications`;
 // ✅ ดึงข้อมูลการแจ้งเตือนจาก API
 export const getNotifications = async () => {
   try {
-    const response = await axios.get(API_URL, { // ใช้ API_URL ที่ถูกต้อง
+    // 👉 ดึง role และ user_id จาก localStorage
+    const role = localStorage.getItem("role");
+    const user_id = localStorage.getItem("user_id");
+
+    const response = await axios.get(API_URL, {
       headers: {
         "ngrok-skip-browser-warning": "true",
         "Content-Type": "application/json",
+      },
+      // ✅ ส่ง role และ user_id เป็น query parameters
+      params: {
+        role,
+        user_id,
       },
     });
 
@@ -23,3 +32,4 @@ export const getNotifications = async () => {
     throw error;
   }
 };
+

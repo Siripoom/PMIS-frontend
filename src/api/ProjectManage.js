@@ -5,12 +5,20 @@
   // ✅ ดึงข้อมูลโครงการทั้งหมด
   export const getAllProjects = async () => {
     try {
+      const role = (localStorage.getItem("role") || "").toLowerCase(); // ✅ ปรับตรงนี้
+      const user_id = localStorage.getItem("user_id");
+  
       console.log("📢 Calling API:", API_URL);
   
       const response = await axios.get(API_URL, {
         headers: {
           "ngrok-skip-browser-warning": "skip-browser-warning",
-        }
+          "Content-Type": "application/json",
+        },
+        params: {
+          role,
+          user_id,
+        },
       });
   
       console.log("✅ API Response (Raw Data):", response.data);
@@ -20,13 +28,12 @@
         return [];
       }
   
-      // ✅ รองรับโครงสร้างที่แตกต่างกัน
       if (Array.isArray(response.data.projects)) {
-        return response.data.projects; // ✅ ใช้ได้เลย
+        return response.data.projects;
       } else if (response.data.data && Array.isArray(response.data.data.projects)) {
-        return response.data.data.projects; // ✅ กรณี `data.projects`
-      } else if (Array.isArray(response.data)) {  
-        return response.data; // ✅ กรณีที่ API ส่งเป็น `[]` ตรง ๆ
+        return response.data.data.projects;
+      } else if (Array.isArray(response.data)) {
+        return response.data;
       } else {
         console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", response.data);
         return [];
@@ -36,6 +43,8 @@
       return [];
     }
   };
+  
+  
 
 // ✅ สร้างโครงการใหม่
 export const createProject = async (data) => {

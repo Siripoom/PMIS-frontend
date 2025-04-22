@@ -23,12 +23,20 @@ export const createResourceProject = async (data) => {
 
 export const getAllResourcesProject = async () => {
   try {
+    // 👉 ดึงและปรับ role เป็น lowercase เพื่อให้ backend ยอมรับ
+    const role = (localStorage.getItem("role") || "").toLowerCase();
+    const user_id = localStorage.getItem("user_id");
+
     const response = await axios.get(API_URL, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
-        "Content-Type": "application/json", // เพิ่ม Content-Type เพื่อให้แน่ใจว่า API ตอบกลับเป็น JSON
+        "Content-Type": "application/json",
       },
-      timeout: 5000, // Timeout 5 วินาที
+      params: {
+        role,
+        user_id,
+      },
+      timeout: 5000,
     });
 
     console.log("✅ API Response (Raw Data):", response.data);
@@ -42,6 +50,8 @@ export const getAllResourcesProject = async () => {
     return [];
   }
 };
+
+
 
 export const getResourceByIdProject = async (id) => {
   try {

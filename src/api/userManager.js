@@ -22,9 +22,20 @@ export const getUserName = async (name) => {
 export const getAllUsers = async () => {
   try {
     console.log("📢 Calling API to fetch all users");
-    
+
+    // 👉 ดึง role และ user_id จาก localStorage
+    const role = localStorage.getItem("role");
+    const user_id = localStorage.getItem("user_id");
+
     const response = await axios.get(`${API_BASE_URL}api/auth/users`, {
-      headers: { "ngrok-skip-browser-warning": "skip-browser-warning" }
+      headers: {
+        "ngrok-skip-browser-warning": "skip-browser-warning",
+        "Content-Type": "application/json",
+      },
+      params: {
+        role,
+        user_id,
+      },
     });
 
     console.log("✅ API Response:", response.data);
@@ -34,6 +45,7 @@ export const getAllUsers = async () => {
     return [];
   }
 };
+
 
 // ฟังก์ชันเพิ่มผู้ใช้ใหม่
 export const addUser = async (userData) => {

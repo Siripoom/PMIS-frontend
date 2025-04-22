@@ -71,12 +71,12 @@ const Sidebar = () => {
             >
               <CheckCircleOutlined /> <span>Budget</span>
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to="/admin/report"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
               <ExclamationCircleOutlined /> <span>Report</span>
-            </NavLink>
+            </NavLink> */}
             <NavLink
               to="/admin/notification"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}

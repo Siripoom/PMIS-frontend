@@ -128,6 +128,10 @@ const ProjectResource = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchResources(); // เรียกตอนโหลด component
+  }, []);
   
 
   const handleDelete = async (key, id) => {

@@ -111,64 +111,62 @@ const Budget = () => {
 
   const fetchAllBudgets = async () => {
     try {
-      // ดึงข้อมูลโครงการทั้งหมด
-      const allProjects = await getAllProjects();
+      // 👉 ดึง role และ user_id จาก localStorage
+      const role = localStorage.getItem("role");
+      const user_id = localStorage.getItem("user_id");
+  
+      // ✅ ดึงข้อมูลโครงการทั้งหมดพร้อม role, user_id (ถ้า getAllProjects รองรับ query)
+      const allProjects = await getAllProjects(role, user_id);
       console.log("📊 ข้อมูลโครงการทั้งหมด:", allProjects);
-
+  
       const budgetPromises = allProjects.map(async (project) => {
         const summary = await getBudgetSummary(project.project_id);
-      
-        // รวมค่า amount ทั้งหมดจาก expenses
+  
         const totalSpent = Array.isArray(summary.expenses)
           ? summary.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
           : 0;
-      
+  
         return {
           projectId: project.project_id,
           projectName: project.project_name,
-          totalBudget: Number(project.budget || 0), // ✅ ใช้ project.budget
-          spentAmount: totalSpent, // ✅ ใช้ amount รวมจาก expenses
+          totalBudget: Number(project.budget || 0),
+          spentAmount: totalSpent,
           remainingBudget: Math.max(Number(project.budget || 0) - totalSpent, 0),
           description: summary.description || "",
           spentAt: summary.spent_at,
           spentBy: summary.spent_by,
         };
       });
-      
-
-      // รอจนกระทั่งข้อมูลทั้งหมดถูกดึงมา
+  
       const allBudgets = await Promise.all(budgetPromises);
-
-      // คำนวณผลรวมของงบประมาณที่ใช้ไป และงบประมาณคงเหลือ
+  
       const totalSpent = allBudgets.reduce((sum, b) => sum + b.spentAmount, 0);
       const totalRemaining = allBudgets.reduce(
         (sum, budget) => sum + budget.remainingBudget,
         0
       );
-
       const totalBudget = allProjects.reduce(
         (sum, project) => sum + Number(project.budget || 0),
         0
       );
-
-      
-      // อัพเดตข้อมูลโครงการและงบประมาณ
+  
       setProjects(allProjects);
       setBudget({
         total: totalBudget,
         spent: totalSpent,
         remaining: totalRemaining,
-      }); // เซตข้อมูลงบทั้งหมด
-
-      console.log(allBudgets); // ดูข้อมูลทั้งหมดที่ดึงมาใน console
+      });
+  
+      console.log(allBudgets);
     } catch (error) {
       console.error("❌ เกิดข้อผิดพลาดในการโหลดข้อมูล:", error);
     }
   };
-
+  
   useEffect(() => {
-    fetchAllBudgets(); // เรียกฟังก์ชันนี้เมื่อคอมโพเนนต์โหลด
+    fetchAllBudgets();
   }, []);
+  
 
   const showExpenseModal = () => setIsExpenseModalVisible(true);
   form.setFieldsValue({
@@ -254,8 +252,8 @@ const Budget = () => {
       </Sider>
       <Layout>
         <Header title="Budget" />
-        <Content className="budget-container">
-          <div className="budget-card-container">
+        <Content className="budget-container px-4 py-6 md:px-8">
+  <div className="budget-card-container space-y-4">
             {/* หัวข้อ */}
             <div className="budget-header">
               <h2 className="budget-title">ภาพรวมงบประมาณโครงการ</h2>
@@ -290,7 +288,7 @@ const Budget = () => {
 
   {/* งบประมาณคงเหลือ */}
   <Card
-    className="budget-card budget-remaining"
+    className="budget-card budget-remaining w-full"
     style={{
       backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500", // ถ้างบประมาณคงเหลือลบให้ใช้สีที่แตกต่าง
     }}
@@ -328,12 +326,12 @@ const Budget = () => {
           </div>
         </Content>
 
-        <Content className="budget-chart-wrapper">
-          <Card className="budget-chart-card">
+        <Content className="budget-chart-wrapper px-4 py-6">
+          <Card className="budget-chart-card w-full">
             <p>เปรียบเทียบบงบประมาณที่ใช้ไปและคงเหลือของแต่ละโครงการ</p>
             <Bar options={chartOptions} data={barData} />
           </Card>
-          <Card className="budget-linechart-card">
+          <Card className="budget-linechart-card w-full mt-4">
             <p>กราฟเส้นเปรียบเทียบงบประมาณ</p>
             <div style={{ width: "100%", height: "280px" }}>
               <Line options={chartOptions} data={lineData} />

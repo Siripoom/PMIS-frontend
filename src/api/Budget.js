@@ -6,21 +6,28 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}api/budget`;
 // ✅ ดึงข้อมูลสรุปงบประมาณของโครงการ
 export const getBudgetSummary = async (projectId) => {
   try {
+    const role = (localStorage.getItem("role") || "").toLowerCase(); // ป้องกัน Invalid role
+    const user_id = localStorage.getItem("user_id");
+
     const response = await axios.get(`${API_URL}/${projectId}`, {
       headers: {
-        "ngrok-skip-browser-warning": "skip-browser-warning", // ✅ ข้าม Warning ของ Ngrok
-        "Content-Type": "application/json", // ✅ ระบุว่าเราต้องการรับ JSON
+        "ngrok-skip-browser-warning": "skip-browser-warning",
+        "Content-Type": "application/json",
+      },
+      params: {
+        role,
+        user_id,
       },
     });
 
-    console.log("📌 Debug Response จาก API:", response.data); // ✅ Debug ข้อมูลที่ได้
-
+    console.log("📌 Debug Response จาก API:", response.data);
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching budget summary:", error.response?.data || error);
     throw error;
   }
 };
+
 
 
 // ✅ บันทึกค่าใช้จ่ายใหม่
@@ -37,12 +44,16 @@ export const recordExpense = async (expenseData) => {
   }
 };
 
-export const allBudgets = async () => {
+export const allBudgets = async (role, user_id) => {
   try {
     const response = await axios.get(`${API_URL}/all`, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
         "Content-Type": "application/json",
+      },
+      params: {
+        role: role,
+        user_id: user_id,
       },
     });
 
@@ -51,4 +62,4 @@ export const allBudgets = async () => {
     console.error("❌ Error fetching all budgets:", error.response?.data || error);
     throw error;
   }
-}
+};

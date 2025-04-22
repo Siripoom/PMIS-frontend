@@ -20,21 +20,22 @@ const Notification = () => {
   useEffect(() => {
     fetchNotifications();
   }, []);
-
-  // ✅ ฟังก์ชันดึงข้อมูลจาก API
+  
   const fetchNotifications = async () => {
     try {
       console.log("📢 กำลังโหลดข้อมูลการแจ้งเตือน...");
+      
+      // ดึงข้อมูลแจ้งเตือนจาก API
       const data = await getNotifications();
-
+  
       console.log("✅ API Response:", data);
-
+  
       if (!data || !Array.isArray(data)) {
         console.error("❌ API ส่งข้อมูลผิดโครงสร้าง:", data);
         throw new Error("❌ ข้อมูล API ไม่ถูกต้อง");
       }
-
-      // ✅ ตรวจสอบและจัดรูปแบบข้อมูลให้สอดคล้องกับ UI
+  
+      // ✅ จัดรูปแบบข้อมูลสำหรับการแสดงผล
       const formattedNotifications = data.map((notif) => ({
         notification_id: notif.notification_id,
         user_id: notif.user_id,
@@ -42,7 +43,7 @@ const Notification = () => {
         status: notif.status,
         created_at: notif.created_at,
       }));
-
+  
       setNotifications(formattedNotifications);
       console.log("✅ โหลดข้อมูลสำเร็จ:", formattedNotifications);
     } catch (error) {
@@ -51,8 +52,7 @@ const Notification = () => {
     }
   };
   
-
-
+  
 // ✅ ฟังก์ชันดึงข้อมูลการแจ้งเตือนความก้าวหน้าโครงการใส่ตารางกา
 useEffect(() => {
   fetchProjectNotifications();
@@ -154,17 +154,7 @@ const fetchProjectNotifications = async () => {
 
   // ✅ คอลัมน์ของตารางแจ้งเตือนความก้าวหน้าโครงการ
   
-  const handleDeleteNotification = async (notificationId) => {
-    try {
-      await deleteProject(notificationId); // ลบจาก API
-      message.success("ลบการแจ้งเตือนสำเร็จ");
-      fetchNotifications(); // โหลดการแจ้งเตือนใหม่
-      fetchProjectNotifications(); // โหลดข้อมูลตารางใหม่ด้วย
-    } catch (error) {
-      console.error("❌ เกิดข้อผิดพลาดขณะลบการแจ้งเตือน:", error);
-      message.error("ลบการแจ้งเตือนไม่สำเร็จ");
-    }
-  };
+
   
 
   const columns1 = [
