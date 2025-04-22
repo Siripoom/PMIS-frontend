@@ -2,7 +2,7 @@ import { message, Layout, Button, Input, Card, Modal, Form, Table } from "antd";
 import { RightOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { getBudgetSummary, recordExpense } from "../../api/Budget";
+import { getBudgetSummary, recordExpense, allBudgetss } from "../../api/Budget";
 import { getAllProjects } from "../../api/ProjectManage";
 import {
   Chart as ChartJS,
@@ -32,14 +32,6 @@ ChartJS.register(
   Legend
 );
 
-//const token = localStorage.getItem("token");
-//const decoded = jwtDecode(token);
-const role = localStorage.getItem("role");
-
-
-
-
-
 const { Sider, Content } = Layout;
 const columns = [
   {
@@ -63,7 +55,13 @@ const columns = [
 
 const Budget = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
+  const token = localStorage.getItem("token");
+  const decoded = jwtDecode(token);
+  const role = localStorage.getItem("role");
   const [projects, setProjects] = useState([]);
+  const [total, setTotal] = useState(null); // amont
+  const [expense, setExpense] = useState(null); // amont
+  const [balance, setBalance] = useState(null); // amont
   const [budget, setBudget] = useState({
     projectName: "",
     total: 0,
@@ -74,21 +72,13 @@ const Budget = () => {
 
   const [lineData, setLineData] = useState({
     labels: [
-      "มกราคม",
-      "กุมภาพันธ์",
-      "มีนาคม",
-      "เมษายน",
-      "พฤษภาคม",
-      "มิถุนายน",
-      "กรกฎาคม",
-      "สิงหาคม",
-      "กันยายน",
-      "ตุลาคม",
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม",
+      "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม"
     ],
     datasets: [
       {
         label: "งบประมาณคงเหลือ",
-        data: [],
+        data: balance, // ✅ ต้องเป็น array ยาว 10 ค่า
         borderColor: "#52C41A",
         backgroundColor: "rgba(47, 139, 225, 0.2)",
         tension: 0.4,
@@ -97,8 +87,8 @@ const Budget = () => {
         pointRadius: 0,
       },
       {
-        label: "งบประมาณที่ใช้ไป ",
-        data: [],
+        label: "งบประมาณที่ใช้ไป",
+        data: expense, // ✅ ต้องเป็น array ยาว 10 ค่า
         borderColor: "#722ED1",
         backgroundColor: "rgba(114, 46, 209, 0.2)",
         tension: 0.4,
@@ -108,24 +98,37 @@ const Budget = () => {
       },
     ],
   });
+  
 
   const fetchAllBudgets = async () => {
     try {
       // 👉 ดึง role และ user_id จาก localStorage
       const role = localStorage.getItem("role");
       const user_id = localStorage.getItem("user_id");
-  
+
+
+      // ✅ ดึงข้อมูลโครงการทั้งหมดพร้อม role, user_id (ถ้า getAllProjects รองรับ query)
+      // const data = await allBudgets(role, user_id);
+      // setAmount(data.amount);
+
       // ✅ ดึงข้อมูลโครงการทั้งหมดพร้อม role, user_id (ถ้า getAllProjects รองรับ query)
       const allProjects = await getAllProjects(role, user_id);
       console.log("📊 ข้อมูลโครงการทั้งหมด:", allProjects);
-  
+
       const budgetPromises = allProjects.map(async (project) => {
         const summary = await getBudgetSummary(project.project_id);
-  
+
         const totalSpent = Array.isArray(summary.expenses)
           ? summary.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
           : 0;
-  
+
+
+          const number = await allBudgetss(role, user_id);
+
+          setBalance(number.balance);
+          setExpense(number.expense); // amont
+          setTotal(number.total); // amont
+
         return {
           projectId: project.project_id,
           projectName: project.project_name,
@@ -137,10 +140,10 @@ const Budget = () => {
           spentBy: summary.spent_by,
         };
       });
-  
+
       const allBudgets = await Promise.all(budgetPromises);
-  
-      const totalSpent = allBudgets.reduce((sum, b) => sum + b.spentAmount, 0);
+
+      const totalSpent = allBudgets.reduce((sum, b) => sum + b.amount, 0);
       const totalRemaining = allBudgets.reduce(
         (sum, budget) => sum + budget.remainingBudget,
         0
@@ -149,24 +152,24 @@ const Budget = () => {
         (sum, project) => sum + Number(project.budget || 0),
         0
       );
-  
+
       setProjects(allProjects);
       setBudget({
         total: totalBudget,
         spent: totalSpent,
         remaining: totalRemaining,
       });
-  
+
       console.log(allBudgets);
     } catch (error) {
       console.error("❌ เกิดข้อผิดพลาดในการโหลดข้อมูล:", error);
     }
   };
-  
+
   useEffect(() => {
     fetchAllBudgets();
   }, []);
-  
+
 
   const showExpenseModal = () => setIsExpenseModalVisible(true);
   form.setFieldsValue({
@@ -179,6 +182,7 @@ const Budget = () => {
     try {
       const totalBudget = Number(values.budget_total) || 0;
       const spentAmount = Number(values.amount) || 0;
+      console.log("📢 ค่าที่ได้รับจากฟอร์ม:", values.spentAmount);
       console.log("📢 ค่าที่ได้รับจากฟอร์ม:", values.budget_spent);
 
       const remainingBudget = Math.max(totalBudget - spentAmount, 0); // ป้องกันไม่ให้ค่าติดลบ
@@ -204,20 +208,20 @@ const Budget = () => {
     }
   };
 
-  
-  
+
+
 
   const barData = {
     labels: ["โครงการ 1", "โครงการ 2", "โครงการ 3", "โครงการ 4"],
     datasets: [
       {
         label: "งบประมาณที่ใช้ไป",
-        data: [budget.spent],
+        data: [expense],
         backgroundColor: "#FF4D4F",
       },
       {
         label: "งบประมาณคงเหลือ",
-        data: [budget.remaining],
+        data: [balance],
         backgroundColor: "#52C41A",
       },
     ],
@@ -253,7 +257,7 @@ const Budget = () => {
       <Layout>
         <Header title="Budget" />
         <Content className="budget-container px-4 py-6 md:px-8">
-  <div className="budget-card-container space-y-4">
+          <div className="budget-card-container space-y-4">
             {/* หัวข้อ */}
             <div className="budget-header">
               <h2 className="budget-title">ภาพรวมงบประมาณโครงการ</h2>
@@ -261,58 +265,52 @@ const Budget = () => {
 
             {/* ปุ่มบันทึก */}
             <div className="budget-actions">
-            {role === "Admin" && (
-  <Button
-    icon={<PlusOutlined />}
-    className="budget-expense-button"
-    onClick={showExpenseModal}
-  >
-    บันทึกค่าใช้จ่าย
-  </Button>
-)}
+              {role === "admin" && (
+                <Button
+                  icon={<PlusOutlined />}
+                  className="budget-expense-button"
+                  onClick={showExpenseModal}
+                >
+                  บันทึกค่าใช้จ่าย
+                </Button>
+              )}
 
-</div>
-
-
- {/* สรุปงบประมาณ */}
-<div className="budget-summary grid grid-cols-1 md:grid-cols-2 gap-4">
-  {/* งบประมาณที่ใช้ไป */}
-  <Card
-  className="budget-card budget-used"
-  style={{ backgroundColor: "#FFD700" }}
->
-  <p>งบประมาณที่ใช้ไป</p>
-  <h3>{budget.spent.toLocaleString() || "0"} บาท</h3> {/* ✅ ใช้ total_spent ที่เก็บไว้ใน state */}
-</Card>
+            </div>
 
 
-  {/* งบประมาณคงเหลือ */}
-  <Card
-    className="budget-card budget-remaining w-full"
-    style={{
-      backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500", // ถ้างบประมาณคงเหลือลบให้ใช้สีที่แตกต่าง
-    }}
-  >
-    <p>งบประมาณคงเหลือ</p>
-    <h3>{budget.remaining.toLocaleString() || "0"} บาท</h3> {/* แสดงงบประมาณคงเหลือ */}
-  </Card>
-</div>
+            <div className="budget-summary grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* งบประมาณที่ใช้ไป */}
+              <Card
+                className="budget-card budget-used"
+                style={{ backgroundColor: "#FFD700" }}
+              >
+                <p>งบประมาณที่ใช้ไป</p>
+                <h3>{expense || "0"} บาท</h3> {/* ✅ ใช้ total_spent ที่เก็บไว้ใน state */}
+              </Card>
 
-{/* งบประมาณทั้งหมด */}
-<div className="budget-total-wrapper mt-4">
-  <Card
-    className="budget-card budget-total"
-    style={{ backgroundColor: "#808080" }}
-  >
-    <p>งบประมาณทั้งหมด</p>
-    <h3>
-      {budget.total !== undefined
-        ? budget.total.toLocaleString()
-        : "0"}{" "}
-      บาท
-    </h3>
-  </Card>
-</div>
+
+              {/* งบประมาณคงเหลือ */}
+              <Card
+                className="budget-card budget-remaining w-full"
+                style={{
+                  backgroundColor: budget.remaining < 0 ? "#FF6347" : "#FFA500", // ถ้างบประมาณคงเหลือลบให้ใช้สีที่แตกต่าง
+                }}
+              >
+                <p>งบประมาณคงเหลือ</p>
+                <h3>{balance || "0"} บาท</h3> {/* แสดงงบประมาณคงเหลือ */}
+              </Card>
+            </div>
+
+            {/* งบประมาณทั้งหมด */}
+            <div className="budget-total-wrapper mt-4">
+              <Card
+                className="budget-card budget-total"
+                style={{ backgroundColor: "#808080" }}
+              >
+                <p>งบประมาณทั้งหมด</p>
+                <h3>{total || "0"} บาท</h3>
+              </Card>
+            </div>
 
 
             {/* ช่องค้นหา */}
@@ -332,11 +330,12 @@ const Budget = () => {
             <Bar options={chartOptions} data={barData} />
           </Card>
           <Card className="budget-linechart-card w-full mt-4">
-            <p>กราฟเส้นเปรียบเทียบงบประมาณ</p>
-            <div style={{ width: "100%", height: "280px" }}>
-              <Line options={chartOptions} data={lineData} />
-            </div>
-          </Card>
+  <p>กราฟเส้นเปรียบเทียบงบประมาณ</p>
+  <div style={{ width: "100%", height: "280px" }}>
+    <Line options={chartOptions} data={lineData} />
+  </div>
+</Card>
+
         </Content>
 
         <Content className="budget-card-row">

@@ -8,10 +8,10 @@
       const role = (localStorage.getItem("role") || "").toLowerCase(); // ✅ ปรับตรงนี้
       const user_id = localStorage.getItem("user_id");
   
-      console.log("📢 Calling API:", API_URL);
+      console.log("📢 Calling API:", user_id);
   
       const response = await axios.get(API_URL, {
-        headers: {
+           headers: {
           "ngrok-skip-browser-warning": "skip-browser-warning",
           "Content-Type": "application/json",
         },
@@ -20,7 +20,7 @@
           user_id,
         },
       });
-  
+      
       console.log("✅ API Response (Raw Data):", response.data);
   
       if (!response.data) {

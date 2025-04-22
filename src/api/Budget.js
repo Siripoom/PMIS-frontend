@@ -45,9 +45,9 @@ export const recordExpense = async (expenseData) => {
   }
 };
 
-export const allBudgets = async (role, user_id) => {
+export const allBudgetss = async (role, user_id) => {
   try {
-    const response = await axios.get(`${API_URL}/all`, {
+    const response = await axios.get(`${API_URL}`, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
         "Content-Type": "application/json",

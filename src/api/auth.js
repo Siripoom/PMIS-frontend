@@ -15,6 +15,7 @@ export const login = async (data) => {
       localStorage.setItem("token", response.data.token);  // 🔹 บันทึก Token
       localStorage.setItem("role", response.data.role);    // 🔹 บันทึก Role
       localStorage.setItem("name", response.data.username);    // 🔹 บันทึก name
+      localStorage.setItem("user_id", response.data.id);    // 🔹 บันทึก user_id
       console.log("✅ Token & Role stored in localStorage");
       return response.data;
     } else {

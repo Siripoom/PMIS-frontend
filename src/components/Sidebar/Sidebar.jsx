@@ -39,7 +39,7 @@ const Sidebar = () => {
       </div>
       <nav className="sidebar-nav">
         {/* เมนูสำหรับ Admin */}
-        {user && user.role === 'Admin' && (
+        {user && user.role === 'admin' && (
           <>
             <NavLink
               to="/admin/dashboard"
@@ -93,7 +93,7 @@ const Sidebar = () => {
         )}
 
         {/* เมนูสำหรับ Manager */}
-        {user && user.role === 'Manager' && (
+        {user && user.role === 'manager' && (
           <>
             <NavLink
               to="/manager/dashboard"
@@ -141,7 +141,7 @@ const Sidebar = () => {
         )}
 
         {/* เมนูสำหรับ User */}
-        {user && user.role === 'User' && (
+        {user && user.role === 'user' && (
           <>
             <NavLink
               to="/user/dashboard"

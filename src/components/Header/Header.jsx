@@ -18,7 +18,7 @@ const Header = ({ title }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const username = localStorage.getItem("username");
+    const username = localStorage.getItem("name");
     if (token && username) {
       setUser(username);
     }
