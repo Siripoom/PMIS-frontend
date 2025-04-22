@@ -8,8 +8,8 @@ export const getBudgetSummary = async (projectId) => {
   try {
     const role = (localStorage.getItem("role") || "").toLowerCase(); // ป้องกัน Invalid role
     const user_id = localStorage.getItem("user_id");
-
-    const response = await axios.get(`${API_URL}/${projectId}`, {
+    console.log("Project ID:", projectId);
+    const response = await axios.get(`${API_URL}`, {
       headers: {
         "ngrok-skip-browser-warning": "skip-browser-warning",
         "Content-Type": "application/json",
@@ -17,6 +17,7 @@ export const getBudgetSummary = async (projectId) => {
       params: {
         role,
         user_id,
+        project_id: projectId,
       },
     });
 
