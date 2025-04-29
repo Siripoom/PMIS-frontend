@@ -1,36 +1,41 @@
-# Use Node.js as base image
-FROM node:20-slim AS builder
+# Build Stage
+FROM node:20-slim AS build
 
-# Set working directory
 WORKDIR /app
 
-# Install yarn
-RUN npm install -g yarn
+# Copy package files
+COPY package.json package-lock.json* yarn.lock* ./
 
-# Copy package.json and package-lock.json files
-COPY package*.json ./
-COPY yarn.lock ./
+# Use either yarn or npm, whichever lock file is available
+# We'll check if yarn.lock exists and use yarn if so
+# Otherwise, fall back to npm
+RUN if [ -f yarn.lock ]; then \
+        yarn install --frozen-lockfile; \
+    else \
+        npm ci; \
+    fi
 
-# Install dependencies
-RUN yarn install
-
-# Copy the rest of the application code
+# Copy the rest of the app
 COPY . .
 
-# Build the application
-RUN yarn build
+# Build the app
+RUN if [ -f yarn.lock ]; then \
+        yarn build; \
+    else \
+        npm run build; \
+    fi
 
-# Production stage
+# Production Stage
 FROM nginx:stable-alpine
 
-# Copy built files from builder stage to nginx serve directory
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy built files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration if needed
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
+# Expose port 80
 EXPOSE 80
 
-# Start nginx server
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
