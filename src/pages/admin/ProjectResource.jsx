@@ -345,7 +345,7 @@ const ProjectResource = () => {
     { title: "ชื่อทรัพยากร", dataIndex: "resource_name" },
     { title: "หมวดหมู่", dataIndex: "unit" },
     { title: "จำนวน", dataIndex: "quantity" },
-    ...(role !== "Manager" && role !== "User" // ตรวจสอบว่าเป็นผู้ใช้ทั่วไปหรือไม่
+    ...(role !== "manager" && role !== "user" // ตรวจสอบว่าเป็นผู้ใช้ทั่วไปหรือไม่
       ? [
           {
             title: "จัดการ",
@@ -405,7 +405,7 @@ const ProjectResource = () => {
             <button type="primary" className="custom-search-button">
               ค้นหา
             </button>
-            {role === "Admin" ? (
+            {role === "admin" ? (
   <>
     <Button
       type="primary"

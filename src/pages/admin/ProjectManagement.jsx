@@ -180,7 +180,7 @@ const ProjectManagement = () => {
         ),
     },
     // 👇 เงื่อนไขในการแสดงคอลัมน์จัดการเฉพาะ role ไม่ใช่ manager
-    ...(role !== "Manager" && role !== "User"
+    ...(role !== "manager" && role !== "User"
       ? [
           {
             title: "จัดการ",
@@ -239,13 +239,11 @@ const handleDeleteProject = async (id) => {
           <div className="bg-white p-4 shadow-md rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">การจัดการโครงการ</h2>
-              {role !== "Manager" && role !== "User" && (
+              {role !== "manager" && role !== "User" && (
   <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
     เพิ่มโครงการ
   </Button>
 )}
-
-
             </div>
             {loading ? <Spin size="large" /> : <Table columns={columns} dataSource={projects} rowKey="project_id" pagination={{ pageSize: 5 }} />}
           </div>

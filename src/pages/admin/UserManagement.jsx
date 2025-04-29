@@ -277,9 +277,9 @@ const UserManagement = () => {
             rules={[{ required: true, message: "เลือก Role" }]}
           >
             <Select>
-              <Option value="Admin">Admin</Option>
-              <Option value="Manager">Manager</Option>
-              <Option value="User">User</Option>
+              <Option value="admin">Admin</Option>
+              <Option value="manager">Manager</Option>
+              <Option value="user">User</Option>
             </Select>
           </Form.Item>
           <Form.Item
@@ -341,9 +341,9 @@ const UserManagement = () => {
             rules={[{ required: true, message: "เลือก Role" }]}
           >
             <Select>
-              <Option value="Admin">Admin</Option>
-              <Option value="Manager">Manager</Option>
-              <Option value="User">User</Option>
+              <Option value="admin">admin</Option>
+              <Option value="manager">manager</Option>
+              <Option value="user">user</Option>
             </Select>
           </Form.Item>
           <Form.Item name="password" label="Password">
