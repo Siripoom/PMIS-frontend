@@ -4,6 +4,9 @@ FROM node:20-slim AS builder
 # Set working directory
 WORKDIR /app
 
+# Install yarn
+RUN npm install -g yarn
+
 # Copy package.json and package-lock.json files
 COPY package*.json ./
 COPY yarn.lock ./
