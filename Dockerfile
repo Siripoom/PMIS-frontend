@@ -4,26 +4,16 @@ FROM node:20-slim AS build
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* yarn.lock* ./
+COPY package.json ./
 
-# Use either yarn or npm, whichever lock file is available
-# We'll check if yarn.lock exists and use yarn if so
-# Otherwise, fall back to npm
-RUN if [ -f yarn.lock ]; then \
-        yarn install --frozen-lockfile; \
-    else \
-        npm ci; \
-    fi
+# Force use npm only
+RUN npm install
 
 # Copy the rest of the app
 COPY . .
 
 # Build the app
-RUN if [ -f yarn.lock ]; then \
-        yarn build; \
-    else \
-        npm run build; \
-    fi
+RUN npm run build
 
 # Production Stage
 FROM nginx:stable-alpine
