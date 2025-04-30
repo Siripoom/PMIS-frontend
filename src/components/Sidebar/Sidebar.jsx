@@ -51,19 +51,19 @@ const Sidebar = () => {
               to="/admin/project-management"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
-              <EditOutlined /> <span>Project Management</span>
+              <EditOutlined /> <span>Project</span>
             </NavLink>
             <NavLink
               to="/admin/project-progress"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
-              <TableOutlined /> <span>Project Progress</span>
+              <TableOutlined /> <span>Progress</span>
             </NavLink>
             <NavLink
               to="/admin/resource-management"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
-              <FileTextOutlined /> <span>Resource Management</span>
+              <FileTextOutlined /> <span>Resource</span>
             </NavLink>
             <NavLink
               to="/admin/budget"
@@ -87,7 +87,7 @@ const Sidebar = () => {
               to="/admin/user-management"
               className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
-              <UserOutlined /> <span>User Management</span>
+              <UserOutlined /> <span>User</span>
             </NavLink>
           </>
         )}

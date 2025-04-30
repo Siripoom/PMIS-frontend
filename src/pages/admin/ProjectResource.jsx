@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // ✅ เพิ่ม useEffect
+import React, { useState, useEffect } from "react";
 import { message } from "antd";
 import {
   Layout,
@@ -9,11 +9,17 @@ import {
   Modal,
   Form,
   Select,
+  Row,
+  Col,
+  Space,
 } from "antd";
 import {
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
+  MenuOutlined,
+  PlusOutlined,
+  ImportOutlined,
 } from "@ant-design/icons";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Header from "../../components/Header/Header";
@@ -24,74 +30,79 @@ import {
   createResource,
   updateResource,
   deleteResource,
-  useResource,
 } from "../../api/ProjectResource";
 import {
   createResourceProject,
   getAllResourcesProject,
-  getResourceByIdProject,
-  updateResourceProject,
-  deleteResourceProject,
 } from "../../api/resourceProject";
+
 const { Sider, Content } = Layout;
 
 const ProjectResource = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false); // State สำหรับเปิด/ปิด Modal
-  const [form] = Form.useForm(); // ฟอร์ม instance สำหรับ Modal
-  const [editForm] = Form.useForm(); // ฟอร์ม instance สำหรับ Modal แก้ไข
-  const [dataSource, setDataSource] = useState([]); // State สำหรับเก็บข้อมูลที่กรอกในฟอร์ม
-  const [historyData, setHistoryData] = useState([]); // State สำหรับประวัติการเบิกทรัพยากร
-  
-  const [editRecord, setEditRecord] = useState(null); // เก็บข้อมูลของรายการที่ต้องการแก้ไข
-  const [isAddResourceModalVisible, setIsAddResourceModalVisible] = useState(false);
+  // States
+  const [collapsed, setCollapsed] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [dataSource, setDataSource] = useState([]);
+  const [historyData, setHistoryData] = useState([]);
+  const [editRecord, setEditRecord] = useState(null);
+  const [isAddResourceModalVisible, setIsAddResourceModalVisible] =
+    useState(false);
   const [formAdd] = Form.useForm();
-  const [loading, setLoading] = useState(false); // ✅ เพิ่มตัวแปร state
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false); // เปิด/ปิด Modal
-  const role = localStorage.getItem("role"); // 👈 ดึง role ของผู้ใช้
+  const [loading, setLoading] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const role = localStorage.getItem("role");
 
+  // Category options for forms
+  const [categoryOptions, setCategoryOptions] = useState([
+    { label: "อุปกรณ์ IT", value: "อุปกรณ์ IT" },
+    { label: "เฟอร์นิเจอร์", value: "เฟอร์นิเจอร์" },
+    { label: "เครื่องมือ", value: "เครื่องมือ" },
+    { label: "บุคลากร", value: "บุคลากร" },
+  ]);
+
+  // Fetch resources on component mount
   useEffect(() => {
     fetchResources();
+    fetchResourceHistory();
   }, []);
 
+  // Show, hide modals and reset forms
   const showModal = () => {
-    setEditRecord(null); // ✅ ตั้งค่าเป็น null เพื่อให้เป็นโหมดเพิ่ม
-    form.resetFields(); // ✅ รีเซ็ตฟอร์มให้ว่าง
-    setIsModalVisible(true); // ✅ เปิด Modal
+    setEditRecord(null);
+    form.resetFields();
+    setIsModalVisible(true);
   };
 
-  // ✅ เปิด Modal "เพิ่มทรัพยากร"
   const showAddResourceModal = () => {
     setIsAddResourceModalVisible(true);
   };
-  // ✅ ปิด Modal "เพิ่มทรัพยากร"
+
   const handleCancelAddResource = () => {
     setIsAddResourceModalVisible(false);
     formAdd.resetFields();
   };
 
-  // ฟังก์ชันปิด Modal แก้ไขทรัพยากร เมื่อกด "ยกเลิก"
   const handleCancel = () => {
-    setIsModalVisible(false); // ✅ ปิด modal เบิกทรัพยากร
-    setIsEditModalVisible(false); // ✅ ปิด modal แก้ไข (ถ้ามีการแชร์ฟังก์ชัน)
-    form.resetFields(); // ✅ รีเซ็ตฟอร์ม
+    setIsModalVisible(false);
+    setIsEditModalVisible(false);
+    form.resetFields();
   };
-  
-  
 
-
+  // Handle form submissions
   const handleForm = async (values) => {
     try {
       console.log("📢 ค่าที่ได้รับจากฟอร์ม:", values);
-  
-      // ส่งข้อมูลจากฟอร์มโดยตรงไปยัง backend
+
       const response = await createResourceProject(values);
-  
+
       console.log("✅ API Response:", JSON.stringify(response, null, 2));
-  
+
       if (response) {
         message.success("✅ เบิกทรัพยากรสำเร็จ!");
-  
-        // ✅ เพิ่มข้อมูลไปยัง historyData
+
         setHistoryData((prev) => [
           ...prev,
           {
@@ -102,8 +113,8 @@ const ProjectResource = () => {
             unit: values.unit?.trim(),
           },
         ]);
-  
-        await fetchResources(); // ✅ โหลดข้อมูลใหม่
+
+        await fetchResources();
         setIsModalVisible(false);
         form.resetFields();
       } else {
@@ -115,7 +126,8 @@ const ProjectResource = () => {
       message.error("❌ ไม่สามารถเบิกทรัพยากรได้");
     }
   };
-  
+
+  // Fetch resource data
   const fetchResources = async () => {
     setLoading(true);
     try {
@@ -129,11 +141,7 @@ const ProjectResource = () => {
     }
   };
 
-  useEffect(() => {
-    fetchResources(); // เรียกตอนโหลด component
-  }, []);
-  
-
+  // Delete resource
   const handleDelete = async (key, id) => {
     console.log(`📢 กำลังส่งคำขอลบทรัพยากร: ID = ${id}`);
 
@@ -148,10 +156,7 @@ const ProjectResource = () => {
 
       if (response?.success) {
         console.log(`✅ ทรัพยากร ID: ${id} ถูกลบแล้ว!`);
-
-        // ✅ อัปเดต UI โดยเอาทรัพยากรที่ถูกลบออกจาก dataSource
         setDataSource((prev) => prev.filter((item) => item.resource_id !== id));
-
         message.success("✅ ลบทรัพยากรสำเร็จ!");
       } else {
         console.warn(`⚠️ ไม่สามารถลบทรัพยากร ID: ${id}`);
@@ -163,12 +168,12 @@ const ProjectResource = () => {
     }
   };
 
+  // Edit resource
   const handleEditSubmit = async (values) => {
     try {
-      // สร้าง requestData สำหรับส่งไปยัง API
       const requestData = {
         resource_name: values.resource_name?.trim(),
-        unit: values.unit?.trim(), // ✅ ต้องเป็น unit ไม่ใช่ category
+        unit: values.unit?.trim(),
         quantity: Number(values.quantity) || 0,
       };
 
@@ -177,18 +182,16 @@ const ProjectResource = () => {
         JSON.stringify(requestData, null, 2)
       );
 
-      // ส่งข้อมูลไปยัง API หรือจัดการข้อมูลในฐานข้อมูล
       const response = await updateResource(
         editRecord.resource_id,
         requestData
-      ); // ใช้ editRecord.resource_id เพื่ออัพเดตทรัพยากรที่ต้องการแก้ไข
+      );
 
       console.log("✅ API Response:", JSON.stringify(response, null, 2));
 
       if (response?.success) {
-        message.success("✅ แก้ไขทรัพยากรสำเร็จ!"); // ถ้า API ส่งกลับว่าอัพเดตสำเร็จ
+        message.success("✅ แก้ไขทรัพยากรสำเร็จ!");
 
-        // อัปเดตข้อมูลใน state หรือ local UI
         setDataSource((prev) =>
           prev.map((item) =>
             item.resource_id === editRecord.resource_id
@@ -197,7 +200,6 @@ const ProjectResource = () => {
           )
         );
 
-        // อัปเดตประวัติการแก้ไข
         setHistoryData((prev) =>
           prev.map((item) =>
             item.username === editRecord.username
@@ -210,30 +212,26 @@ const ProjectResource = () => {
           )
         );
 
-        // เรียก fetchResources เพื่อดึงข้อมูลล่าสุดจาก API
         await fetchResources();
-
-        // ปิด Modal หลังจากบันทึกข้อมูลสำเร็จ
-        setIsEditModalVisible(false); // ปิด Modal
-        form.resetFields(); // รีเซ็ตฟอร์ม
+        setIsEditModalVisible(false);
+        form.resetFields();
       } else {
         await fetchResources();
-        message.success("แก้ไขทรัพยากรสำเร็จ!"); // ถ้า API ส่งกลับว่าไม่สำเร็จ
+        message.success("แก้ไขทรัพยากรสำเร็จ!");
         setIsEditModalVisible(false);
       }
     } catch (error) {
       console.error("❌ แก้ไขทรัพยากรผิดพลาด:", error);
-      message.error("❌ ไม่สามารถแก้ไขทรัพยากรได้"); // แสดงข้อความ error
+      message.error("❌ ไม่สามารถแก้ไขทรัพยากรได้");
     }
   };
 
-  // เพิ่มทรัพยากรใหม่
+  // Add new resource
   const handleAddResource = async () => {
     try {
       const values = await formAdd.validateFields();
       console.log("📢 เพิ่มทรัพยากร:", values);
 
-      // ตรวจสอบค่าก่อนส่ง API
       if (
         !values.resource_name ||
         !values.quantity ||
@@ -246,9 +244,8 @@ const ProjectResource = () => {
 
       const requestData = {
         resource_name: values.resource_name.trim(),
-        quantity: Number(values.quantity), // ✅ เปลี่ยนจาก used_quantity เป็น quantity
-        unit: values.category.trim(), // ✅ ใช้ unit แทน category
-        resource_name : values.resource_name.trim(),
+        quantity: Number(values.quantity),
+        unit: values.category.trim(),
       };
 
       console.log(
@@ -263,9 +260,9 @@ const ProjectResource = () => {
       if (response) {
         message.success("✅ เพิ่มทรัพยากรสำเร็จ!");
 
-        fetchResources(); // โหลดรายการทรัพยากรใหม่เพื่ออัปเดต Dropdown
-        setIsAddResourceModalVisible(false); // ปิด Modal
-        formAdd.resetFields(); // รีเซ็ตฟอร์ม
+        fetchResources();
+        setIsAddResourceModalVisible(false);
+        formAdd.resetFields();
       } else {
         console.error("⚠️ API Error Response:", response);
         message.error("⚠️ มีบางอย่างผิดพลาดในการเพิ่มทรัพยากร");
@@ -276,81 +273,91 @@ const ProjectResource = () => {
     }
   };
 
-  // ฟังก์ชันเปิด Modal สำหรับแก้ไข
+  // Show edit modal
   const showEditModal = (record) => {
-    setEditRecord(record); // เก็บข้อมูลของแถวที่เลือก
-    form.resetFields(); // รีเซ็ตฟอร์ม
+    setEditRecord(record);
+    form.resetFields();
     form.setFieldsValue({
-      resource_name: record.resource_name, // ตั้งค่าชื่อทรัพยากรจากแถวที่เลือก
-      unit: record.unit, // ตั้งค่าหมวดหมู่จากแถวที่เลือก
+      resource_name: record.resource_name,
+      unit: record.unit,
       quantity: record.quantity,
-      users: record.username, // ตั้งค่าจำนวนจากแถวที่เลือก
+      users: record.username,
     });
-    setIsEditModalVisible(true); // เปิด Modal
+    setIsEditModalVisible(true);
   };
 
-  useEffect(() => {
-    fetchResources(); // ดึงรายการทรัพยากรหลัก
-    fetchResourceHistory(); // ดึงประวัติการเบิกทรัพยากร
-  }, []);
-
+  // Fetch resource history
   const fetchResourceHistory = async () => {
     try {
-      const data = await getAllResourcesProject(); // ดึงข้อมูลจาก API
+      const data = await getAllResourcesProject();
       console.log("📦 ประวัติการเบิกทรัพยากรจาก API:", data);
 
-      // ตรวจสอบว่า data เป็น Array และแปลงข้อมูลให้อยู่ในรูปแบบที่ตารางต้องการ
       const formattedData = Array.isArray(data)
-  ? data.flatMap((item, index) =>
-      item.resource.map((res, resourceIndex) => {
-        const formattedItem = {
-          key: `${index}-${resourceIndex}`,
-          allocated_by: item.allocated_by || undefined, // ใช้ undefined แทน "-" ถ้าไม่มีค่า
-          project_name: item.project_name || undefined, // ใช้ undefined ถ้าไม่มีค่า
-          resource_name: res.resource_name || undefined, // ใช้ undefined ถ้าไม่มีชื่อทรัพยากร
-          unit: res.unit || undefined, // ใช้ undefined ถ้าไม่มีหน่วย
-          quantity: res.used_quantity || undefined, // ใช้ undefined ถ้าไม่มีจำนวน
-        };
+        ? data.flatMap((item, index) =>
+            item.resource.map((res, resourceIndex) => {
+              const formattedItem = {
+                key: `${index}-${resourceIndex}`,
+                allocated_by: item.allocated_by || undefined,
+                project_name: item.project_name || undefined,
+                resource_name: res.resource_name || undefined,
+                unit: res.unit || undefined,
+                quantity: res.used_quantity || undefined,
+              };
 
-        // ลบข้อมูลที่เป็น undefined ออก
-        return Object.fromEntries(
-          Object.entries(formattedItem).filter(([key, value]) => value !== undefined)
-        );
-      })
-    )
-  : [];
+              return Object.fromEntries(
+                Object.entries(formattedItem).filter(
+                  ([key, value]) => value !== undefined
+                )
+              );
+            })
+          )
+        : [];
 
-
-      setHistoryData(formattedData); // อัปเดต state สำหรับตาราง
+      setHistoryData(formattedData);
     } catch (error) {
       console.error("❌ ดึงข้อมูลประวัติการเบิกล้มเหลว:", error);
       message.error("❌ ไม่สามารถโหลดประวัติการเบิกทรัพยากรได้");
     }
   };
 
-  const [categoryOptions, setCategoryOptions] = useState([
-    { label: "อุปกรณ์ IT", value: "อุปกรณ์ IT" },
-    { label: "เฟอร์นิเจอร์", value: "เฟอร์นิเจอร์" },
-    { label: "เครื่องมือ", value: "เครื่องมือ" },
-    { label: "บุคลากร", value: "บุคลากร" },
-  ]);
+  // Filter resources based on search text
+  const filteredDataSource = dataSource.filter(
+    (item) =>
+      item.resource_name &&
+      item.resource_name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
-  // คอลัมน์ของตารางทรัพยากร
+  // Table columns for resources
   const columns = [
     {
       title: "ลำดับ",
       dataIndex: "index",
       render: (_, __, index) => index + 1,
+      
     },
-    { title: "ชื่อทรัพยากร", dataIndex: "resource_name" },
-    { title: "หมวดหมู่", dataIndex: "unit" },
-    { title: "จำนวน", dataIndex: "quantity" },
-    ...(role !== "manager" && role !== "user" // ตรวจสอบว่าเป็นผู้ใช้ทั่วไปหรือไม่
+    {
+      title: "ชื่อทรัพยากร",
+      dataIndex: "resource_name",
+     
+    },
+    {
+      title: "หมวดหมู่",
+      dataIndex: "unit",
+     
+    },
+    {
+      title: "จำนวน",
+      dataIndex: "quantity",
+      
+    },
+
+    ...(role !== "manager" && role !== "user"
       ? [
           {
             title: "จัดการ",
+           
             render: (_, record) => (
-              <div className="action-buttons">
+              <Space>
                 <Button
                   type="link"
                   danger
@@ -366,285 +373,335 @@ const ProjectResource = () => {
                 >
                   แก้ไข
                 </Button>
-              </div>
+              </Space>
             ),
           },
         ]
       : []),
   ];
-  
 
-  // คอลัมน์ของตารางประวัติการเบิกทรัพยากร
+  // Table columns for history
   const historyColumns = [
-    { title: "ชื่อผู้ใช้", dataIndex: "allocated_by" },
-    { title: "โครงการ", dataIndex: "project_name" },
-    { title: "เบิกทรัพยากร", dataIndex: "resource_name" },
-    { title: "หมวดหมู่", dataIndex: "unit" },
-    { title: "จำนวน", dataIndex: "quantity" },
+    {
+      title: "ชื่อผู้ใช้",
+      dataIndex: "allocated_by",
+     
+    },
+    {
+      title: "โครงการ",
+      dataIndex: "project_name",
+     
+    },
+    {
+      title: "เบิกทรัพยากร",
+      dataIndex: "resource_name",
+     
+    },
+    {
+      title: "หมวดหมู่",
+      dataIndex: "unit",
+     
+    },
+    {
+      title: "จำนวน",
+      dataIndex: "quantity",
+      
+    },
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh", display: "flex" }}>
-      {/* Sidebar */}
-      <Sider width={220} className="lg:block hidden">
+    <Layout sclassName="min-h-screen flex">
+      {/* Sidebar - Fixed position */}
+      <Sider width={220} className="hidden lg:block">
         <Sidebar />
       </Sider>
+
       <Layout>
         <Header title="รายการทรัพยากร" />
+
         <Content className="projectResource-container">
-          <Typography.Text className="projectResource-title">
-            รายการทรัพยากร
-          </Typography.Text>
-
-          <div className="projectResource-header">
-            <Input
-              placeholder="ค้นหารายการทรัพยากร"
-              prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
-              className="projectResource-search"
-            />
-            <button type="primary" className="custom-search-button">
-              ค้นหา
-            </button>
-            {role === "admin" ? (
-  <>
-    <Button
-      type="primary"
-      className="resources-button"
-      onClick={showModal}
-    >
-      เบิกทรัพยากร
-    </Button>
-
-    <Button
-      type="primary"
-      className="add-resorces"
-      onClick={showAddResourceModal}
-    >
-      เพิ่มทรัพยากร
-    </Button>
-  </>
-) : null}
-
-
-          </div>
-          {/* Modal สำหรับเบิกทรัพยากร */}
-          <Modal
-            title="เบิกทรัพยากร"
-            visible={isModalVisible}
-            onCancel={handleCancel}
-            footer={null}
-            width={600}
-          >
-            <Form
-              form={form}
-              onFinish={handleForm}
-              layout="vertical"
-              onValuesChange={(changedValues) => {
-                if (changedValues.resource_name) {
-                  // ค้นหาหมวดหมู่ที่เกี่ยวข้องจาก categoryOptions
-                  const selectedCategory = categoryOptions.find(
-                    (option) => option.value === changedValues.resource_name
-                  );
-
-                  if (selectedCategory) {
-                    form.setFieldsValue({ category: selectedCategory.value });
-                  }
-                }
-              }}
+          {/* Responsive Search and Action Buttons */}
+          <Row gutter={[16, 16]} className="search-actions-row">
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Input
+                placeholder="ค้นหารายการทรัพยากร"
+                prefix={<SearchOutlined />}
+                className="search-input"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+            </Col>
+            <Col
+              xs={24}
+              sm={12}
+              md={16}
+              lg={18}
+              className="action-buttons-container"
             >
-              <Form.Item
-                label="username"
-                name="allocated_by"
-                rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
-              >
-                <Input placeholder="username" />
-              </Form.Item>
+              <Space wrap>
+                {role === "admin" && (
+                  <>
+                    <Button
+                      type="primary"
+                      icon={<ImportOutlined />}
+                      onClick={showModal}
+                      className="button"
+                    >
+                      เบิกทรัพยากร
+                    </Button>
 
-              <Form.Item
-                label="ชื่อโครงการ"
-                name="project_name"
-                rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}
-              >
-                <Input placeholder="ระบุชื่อโครงการ" />
-              </Form.Item>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={showAddResourceModal}
+                      className="button"
+                    >
+                      เพิ่มทรัพยากร
+                    </Button>
+                  </>
+                )}
+              </Space>
+            </Col>
+          </Row>
 
-              {/* ✅ เมื่อเลือก "เบิก" ระบบจะตั้งค่า "หมวดหมู่ที่มี" อัตโนมัติ */}
-              <Form.Item
-      label="เบิก"
-      name="resource_name"
-      rules={[{ required: true, message: "กรุณากรอกข้อมูลในกล่องข้อความ" }]}
-    >
-      <Input placeholder="กรุณากรอกข้อมูลที่ต้องการเบิก" />
-    </Form.Item>
-
-    <Form.Item
-  label="เบิก"
-  name="unit"
-  rules={[{ required: true, message: "กรุณาเลือกสรรพนามสิ่งของ" }]}
->
-  <Select placeholder="เลือกสรรพนามสิ่งของ">
-    {categoryOptions.map((option) => (
-      <Select.Option key={option.value} value={option.value}>
-        {option.label}
-      </Select.Option>
-    ))}
-  </Select>
-</Form.Item>
-
-
-              <Form.Item
-                label="จำนวน"
-                name="used_quantity"
-                rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}
-              >
-                <Input type="number" placeholder="จำนวน" />
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  {editRecord ? "บันทึกการแก้ไข" : "ขอนุมัติ"}
-                </Button>
-                <Button onClick={handleCancel} className="ml-2">
-                  ยกเลิก
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
-
-          <Modal
-            title="เพิ่มทรัพยากร"
-            open={isAddResourceModalVisible}
-            onCancel={handleCancelAddResource}
-            footer={null}
-            width={600}
-          >
-            <Form form={formAdd} layout="vertical" onFinish={handleAddResource}>
-              <Form.Item
-                label="ชื่อทรัพยากร"
-                name="resource_name"
-                rules={[{ required: true, message: "กรุณากรอกชื่อทรัพยากร" }]}
-              >
-                <Input placeholder="ระบุชื่อทรัพยากร" />
-              </Form.Item>
-
-              <Form.Item
-                label="หมวดหมู่"
-                name="category"
-                rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
-              >
-                <Select placeholder="เลือกหมวดหมู่">
-                  {categoryOptions.map((option) => (
-                    <Select.Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                label="จำนวน"
-                name="quantity"
-                rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
-              >
-                <Input type="number" placeholder="ระบุจำนวน" />
-              </Form.Item>
-
-              <Form.Item
-                label="ชื่อผู้ใช้"
-                name="username"
-                rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
-              >
-                <Input placeholder="ระบุชื่อผู้ใช้" />
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit">
-                  เพิ่ม
-                </Button>
-                <Button onClick={handleCancelAddResource} className="ml-2">
-                  ยกเลิก
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
-
-          <Modal
-  title="แก้ไขทรัพยากร"
-  open={isEditModalVisible} // ใช้ state สำหรับเปิด/ปิด Modal
-  onCancel={handleCancel} // ฟังก์ชันปิด Modal เมื่อคลิกปุ่ม "ยกเลิก" หรือปิด Modal
-  footer={null} // ไม่มี footer (ใช้ปุ่มในฟอร์ม)
-  width={600}
->
-  <Form
-    form={form}
-    layout="vertical"
-    onFinish={handleEditSubmit} // ฟังก์ชันที่เรียกเมื่อกดบันทึก
-  >
-    <Form.Item
-      label="ชื่อทรัพยากร"
-      name="resource_name"
-      rules={[{ required: true, message: "กรุณากรอกชื่อทรัพยากร" }]}
-    >
-      <Input placeholder="ระบุชื่อทรัพยากร" />
-    </Form.Item>
-
-    <Form.Item
-      label="หมวดหมู่"
-      name="unit" // ต้องเป็น unit
-      rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
-    >
-      <Select placeholder="เลือกหมวดหมู่">
-        {categoryOptions.map((option) => (
-          <Select.Option key={option.value} value={option.value}>
-            {option.label}
-          </Select.Option>
-        ))}
-      </Select>
-    </Form.Item>
-
-    <Form.Item
-      label="จำนวน"
-      name="quantity"
-      rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
-    >
-      <Input type="number" placeholder="ระบุจำนวน" />
-    </Form.Item>
-
-    <Form.Item>
-      <Button type="primary" htmlType="submit">
-        บันทึกการแก้ไข
-      </Button>
-      <Button onClick={handleCancel} className="ml-2">
-        ยกเลิก
-      </Button>
-    </Form.Item>
-  </Form>
-
-
-            
-          </Modal>
-          {/* ตารางทรัพยากร */}
-          <Table
-            columns={columns}
-            dataSource={dataSource}
-            pagination={{ pageSize: 6, showSizeChanger: false }}
-            className="projectResource-table"
-          />
+          {/* Resource Table */}
+          <div className="table-container">
+            <Table
+              columns={columns}
+              dataSource={filteredDataSource}
+              pagination={{
+                pageSize: 6,
+                showSizeChanger: false,
+                responsive: true,
+              }}
+              className="resource-table"
+              loading={loading}
+              bordered
+              scroll={{ x: "max-content" }}
+            />
+          </div>
         </Content>
 
-        {/* ตารางประวัติการเบิกทรัพยากร */}
+        {/* History Table */}
         <Content className="projectResource-container">
-          <Typography.Text strong style={{ fontSize: "16px", color: "#333" }}>
+          <Typography.Text strong className="section-title">
             ประวัติการเบิกทรัพยากร
           </Typography.Text>
 
-          <Table
-            columns={historyColumns}
-            dataSource={historyData}
-            pagination={{ pageSize: 5, showSizeChanger: false }}
-            className="resource-table"
-          />
+          <div className="table-container">
+            <Table
+              columns={historyColumns}
+              dataSource={historyData}
+              pagination={{
+                pageSize: 5,
+                showSizeChanger: false,
+                responsive: true,
+              }}
+              className="resource-table"
+              loading={loading}
+              bordered
+              scroll={{ x: "max-content" }}
+            />
+          </div>
         </Content>
+
+        {/* Modals */}
+        {/* 1. Resource Request Modal */}
+        <Modal
+          title="เบิกทรัพยากร"
+          visible={isModalVisible}
+          onCancel={handleCancel}
+          footer={null}
+          width="auto"
+          maxWidth={600}
+          centered
+        >
+          <Form
+            form={form}
+            onFinish={handleForm}
+            layout="vertical"
+            onValuesChange={(changedValues) => {
+              if (changedValues.resource_name) {
+                const selectedCategory = categoryOptions.find(
+                  (option) => option.value === changedValues.resource_name
+                );
+                if (selectedCategory) {
+                  form.setFieldsValue({ category: selectedCategory.value });
+                }
+              }
+            }}
+          >
+            <Form.Item
+              label="username"
+              name="allocated_by"
+              rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
+            >
+              <Input placeholder="username" />
+            </Form.Item>
+
+            <Form.Item
+              label="ชื่อโครงการ"
+              name="project_name"
+              rules={[{ required: true, message: "กรุณากรอกชื่อโครงการ" }]}
+            >
+              <Input placeholder="ระบุชื่อโครงการ" />
+            </Form.Item>
+
+            <Form.Item
+              label="เบิก"
+              name="resource_name"
+              rules={[
+                { required: true, message: "กรุณากรอกข้อมูลในกล่องข้อความ" },
+              ]}
+            >
+              <Input placeholder="กรุณากรอกข้อมูลที่ต้องการเบิก" />
+            </Form.Item>
+
+            <Form.Item
+              label="เบิก"
+              name="unit"
+              rules={[{ required: true, message: "กรุณาเลือกสรรพนามสิ่งของ" }]}
+            >
+              <Select placeholder="เลือกสรรพนามสิ่งของ">
+                {categoryOptions.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="จำนวน"
+              name="used_quantity"
+              rules={[{ required: true, message: "กรุณากรอกจำนวน" }]}
+            >
+              <Input type="number" placeholder="จำนวน" />
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  {editRecord ? "บันทึกการแก้ไข" : "ขอนุมัติ"}
+                </Button>
+                <Button onClick={handleCancel}>ยกเลิก</Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* 2. Add Resource Modal */}
+        <Modal
+          title="เพิ่มทรัพยากร"
+          open={isAddResourceModalVisible}
+          onCancel={handleCancelAddResource}
+          footer={null}
+          width="auto"
+          maxWidth={600}
+          centered
+        >
+          <Form form={formAdd} layout="vertical" onFinish={handleAddResource}>
+            <Form.Item
+              label="ชื่อทรัพยากร"
+              name="resource_name"
+              rules={[{ required: true, message: "กรุณากรอกชื่อทรัพยากร" }]}
+            >
+              <Input placeholder="ระบุชื่อทรัพยากร" />
+            </Form.Item>
+
+            <Form.Item
+              label="หมวดหมู่"
+              name="category"
+              rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
+            >
+              <Select placeholder="เลือกหมวดหมู่">
+                {categoryOptions.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="จำนวน"
+              name="quantity"
+              rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+            >
+              <Input type="number" placeholder="ระบุจำนวน" />
+            </Form.Item>
+
+            <Form.Item
+              label="ชื่อผู้ใช้"
+              name="username"
+              rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้" }]}
+            >
+              <Input placeholder="ระบุชื่อผู้ใช้" />
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  เพิ่ม
+                </Button>
+                <Button onClick={handleCancelAddResource}>ยกเลิก</Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* 3. Edit Resource Modal */}
+        <Modal
+          title="แก้ไขทรัพยากร"
+          open={isEditModalVisible}
+          onCancel={handleCancel}
+          footer={null}
+          width="auto"
+          maxWidth={600}
+          centered
+        >
+          <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
+            <Form.Item
+              label="ชื่อทรัพยากร"
+              name="resource_name"
+              rules={[{ required: true, message: "กรุณากรอกชื่อทรัพยากร" }]}
+            >
+              <Input placeholder="ระบุชื่อทรัพยากร" />
+            </Form.Item>
+
+            <Form.Item
+              label="หมวดหมู่"
+              name="unit"
+              rules={[{ required: true, message: "กรุณาเลือกหมวดหมู่" }]}
+            >
+              <Select placeholder="เลือกหมวดหมู่">
+                {categoryOptions.map((option) => (
+                  <Select.Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="จำนวน"
+              name="quantity"
+              rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+            >
+              <Input type="number" placeholder="ระบุจำนวน" />
+            </Form.Item>
+
+            <Form.Item>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  บันทึกการแก้ไข
+                </Button>
+                <Button onClick={handleCancel}>ยกเลิก</Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+
         <Footer />
       </Layout>
     </Layout>

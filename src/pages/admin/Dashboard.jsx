@@ -8,7 +8,7 @@ import Footer from "../../components/Footer/Footer";
 import { useEffect, useState } from "react";
 import { getAllProjects } from "../../api/ProjectManage";
 import { getAllUsers } from "../../api/userManager";
-import { getBudgetSummary } from "../../api/Budget";
+import { getBudgetSummary, allBudgetss } from "../../api/Budget";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 dayjs.locale("th");
@@ -77,7 +77,9 @@ const Dashboard = () => {
         const userData = await getAllUsers();
 
         const updatedProjects = projectData.map((proj) => {
-          const user = (userData.data || []).find((u) => u.user_id === proj.created_by);
+          const user = (userData.data || []).find(
+            (u) => u.user_id === proj.created_by
+          );
           return {
             ...proj,
             username: user ? user.username : "ไม่ระบุ",
@@ -91,7 +93,10 @@ const Dashboard = () => {
           const summary = await getBudgetSummary(project.project_id);
 
           const totalSpent = Array.isArray(summary.expenses)
-            ? summary.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
+            ? summary.expenses.reduce(
+                (sum, e) => sum + Number(e.amount || 0),
+                0
+              )
             : 0;
 
           return {
@@ -106,14 +111,16 @@ const Dashboard = () => {
         const allBudgets = await Promise.all(budgetPromises);
         setBudgetSummaries(allBudgets);
 
-        const totalSpent = allBudgets.reduce((sum, b) => sum + b.spent, 0);
-        const totalRemaining = allBudgets.reduce((sum, b) => sum + b.remaining, 0);
-        const totalBudget = allBudgets.reduce((sum, b) => sum + b.totalBudget, 0);
+        const role = localStorage.getItem("role");
+        const user_id = localStorage.getItem("user_id");
+
+        const budgetData = await allBudgetss(role, user_id);
+        console.log("Budget Data:", budgetData.balance);
 
         setBudget({
-          total: totalBudget,
-          spent: totalSpent,
-          remaining: totalRemaining,
+          total: budgetData.total || 0,
+          spent: budgetData.expense || 0,
+          remaining: budgetData.balance || 0,
         });
       } catch (err) {
         console.error("❌ Error fetching dashboard data:", err);
@@ -196,6 +203,27 @@ const Dashboard = () => {
     });
   };
 
+  // ฟังก์ชันสำหรับจัดรูปแบบตัวเลขเป็นสกุลเงินบาท
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("th-TH", {
+      style: "currency",
+      currency: "THB",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  // จัดเตรียมข้อมูลงบประมาณรวมสำหรับแสดงในกราฟ
+  const getBudgetChartData = () => {
+    return [
+      {
+        name: "งบประมาณรวม",
+        spent: budget.spent || 0,
+        remaining: budget.remaining || 0,
+      },
+    ];
+  };
+
   const statusData = getProjectStatusSummary(projects);
 
   return (
@@ -209,7 +237,9 @@ const Dashboard = () => {
 
         <Content className="dashboard-container p-6 text-center">
           <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-semibold mb-6">ข้อมูลด้านบริหารจัดการโครงการ</h2>
+            <h2 className="text-xl font-semibold mb-6">
+              ข้อมูลด้านบริหารจัดการโครงการ
+            </h2>
 
             {loading ? (
               <p>⏳ กำลังโหลดข้อมูลโครงการ...</p>
@@ -226,12 +256,15 @@ const Dashboard = () => {
                         <strong>สถานะ:</strong> {project.status}
                       </p>
                       <p className="text-gray-700">
-                        <strong>ผู้รับผิดชอบ:</strong> {getUsernameById(project.created_by)}
+                        <strong>ผู้รับผิดชอบ:</strong>{" "}
+                        {getUsernameById(project.created_by)}
                       </p>
                       <Progress
                         percent={getProgressPercent(project.status)}
                         strokeColor={getProgressColor(project.status)}
-                        status={project.status === "Completed" ? "success" : undefined}
+                        status={
+                          project.status === "Completed" ? "success" : undefined
+                        }
                       />
                     </Card>
                   </Col>
@@ -280,21 +313,37 @@ const Dashboard = () => {
               <Col xs={24} lg={12}>
                 <div className="bg-white p-6 rounded-2xl shadow-lg">
                   <h2 className="text-xl font-semibold mb-6">งบประมาณ</h2>
-                  <BarChart
-                    width={600}
-                    height={300}
-                    data={budgetSummaries}
-                    barCategoryGap={40}
-                    barGap={5}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="projectName" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="spent" fill="#00bfff" name="ใช้ไป" barSize={30} />
-                    <Bar dataKey="remaining" fill="#ffa500" name="คงเหลือ" barSize={30} />
-                  </BarChart>
+                  {loading ? (
+                    <p>⏳ กำลังโหลดข้อมูลงบประมาณ...</p>
+                  ) : (
+                    <>
+                      <BarChart
+                        width={600}
+                        height={300}
+                        data={getBudgetChartData()}
+                        barCategoryGap={40}
+                        barGap={5}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => formatCurrency(value)} />
+                        <Legend />
+                        <Bar
+                          dataKey="spent"
+                          fill="#00bfff"
+                          name="ใช้ไป"
+                          barSize={30}
+                        />
+                        <Bar
+                          dataKey="remaining"
+                          fill="#ffa500"
+                          name="คงเหลือ"
+                          barSize={30}
+                        />
+                      </BarChart>
+                    </>
+                  )}
                 </div>
               </Col>
             </Row>

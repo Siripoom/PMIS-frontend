@@ -1,108 +1,129 @@
-.projectResource-container {
-  
-  padding: 30px;
-  background-color: #f4f5f7;
-  overflow-y: auto;
-  overflow: hidden; /* ปิด Scrollbar */
-  width: 100%;
+/* Main layout structure */
+.main-content-layout {
+  min-height: 100vh;
+  transition: margin-left 0.2s;
 }
 
-/* ✅ เพิ่มสไตล์ของหัวข้อ "การจัดการโครงการ" */
+/* Main container */
+.projectResource-container {
+  padding: 20px;
+  width: calc(100% - 40px); /* Adjust for padding */
+  margin-bottom: 20px;
+  background-color: #f4f5f7; /* Background color for content area */
+}
+
+/* Title styles */
 .projectResource-title {
   display: block;
   font-size: 16px;
   font-weight: 500;
   color: #6b7280;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
-.projectResource-container {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  margin: 20px;
-  
-}
-
-/* ส่วนหัว */
-.projectResource-header {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  max-width: 383px;
-}
-
-
-/*Input ค้นหา */
-.projectResource-search {
-  border-radius: 20px;
-  padding: 10px 15px;
+.section-title {
   font-size: 16px;
+  color: #333;
+  margin-bottom: 16px;
+  display: block;
+}
+
+/* Search and actions row */
+.search-actions-row {
+  margin-bottom: 20px;
+}
+
+/* Search input */
+.search-input {
   width: 100%;
-  margin-left: -10px;
-}
-/* Search Button */
-.custom-search-button{
-  background-color: #1890ff;
-  color: white;
-  font-size: 16px;
-  border-radius: 12px;
-  padding: 8px 20px
-  }
-  .custom-search-button:hover{
-    background-color: #40a9ff;
-  }
-
-/*dropdown ประเภทโครงการ */
-.category-dropdown {
-  background-color: white;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
+  border-radius: 20px;
   padding: 8px 12px;
-  cursor: pointer;
-  margin-left: 1056px;
-  position: absolute;
-  height: 39px;
 }
 
-.category-dropdown:hover {
-  border-color: #40a9ff;
+/* Container for action buttons */
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end;
 }
 
-/*เบิกทรัพยากร*/
-
-.resources-button {
-  background-color: #1890ff;
-  position: absolute;
-  margin-left: 1160px;
-  margin-top: -1fpx;
-  height: 39px;
-}
-.add-resorces{
-  background-color: #1890ff;
-  position: absolute;
-  margin-left: 1280px;
-  margin-top: -1px;
-  height: 39px;
+/* For mobile screens, change to left alignment */
+@media (max-width: 576px) {
+  .action-buttons-container {
+    justify-content: flex-start;
+  }
 }
 
-
-
-/* ตาราง */
-.projectResource-table .ant-table {
-  border-radius: 10px;
+/* Button styles */
+.button {
+  border-radius: 6px;
 }
 
-/* ปุ่มลบและแก้ไข */
+/* Table container */
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+/* Resource table */
+.resource-table {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* Action buttons in table */
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* จุดสถานะ */
+/* Modal styling */
+.ant-modal {
+  width: 90% !important;
+  max-width: 600px;
+}
+
+/* Make modals responsive on small screens */
+@media (max-width: 576px) {
+  .ant-modal {
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+}
+
+/* Sidebar responsiveness */
+.sidebar {
+  z-index: 999;
+  position: fixed !important;
+  left: 0;
+  height: 100vh;
+}
+
+/* Main content area adjustment to prevent overlap with sidebar */
+.ant-layout-content {
+  transition: margin-left 0.2s;
+}
+
+/* When sidebar is collapsed on mobile */
+@media (max-width: 992px) {
+  .ant-layout-has-sider {
+    flex-direction: column;
+  }
+
+  .ant-layout-sider-collapsed {
+    margin-left: -220px;
+  }
+
+  .ant-layout-sider-collapsed + .ant-layout {
+    margin-left: 0 !important;
+  }
+}
+
+/* Status dots (optional) */
 .status-dot {
   width: 10px;
   height: 10px;
@@ -115,28 +136,426 @@
 }
 
 .status-dot.blue {
-  background-color: blue;
+  background-color: #1890ff;
 }
 
 .status-dot.red {
-  background-color: red;
+  background-color: #ff4d4f;
 }
 
-/* Pagination */
+/* Responsive pagination */
 .ant-pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
 
+/* Responsive form in modals */
+.ant-form-item-label {
+  font-weight: 500;
+}
 
-/* ✅ สไตล์สำหรับตาราง "รายการทรัพยากร" */
-.resource-table {
-  border: 1px solid #ddd;
+/* Make sure buttons don't overlap on small screens */
+.ant-space {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+/* Responsive layout for mobile */
+@media (max-width: 992px) {
+  .main-content-layout {
+    margin-left: 0 !important; /* Override inline style when sidebar is collapsed */
+  }
+}
+
+@media (max-width: 576px) {
+  .projectResource-container {
+    padding: 16px;
+    margin: 10px;
+    width: calc(100% - 20px); /* Adjust for smaller margins on mobile */
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .ant-table-thead > tr > th:first-child,
+  .ant-table-tbody > tr > td:first-child {
+    padding-left: 8px;
+  }
+
+  .ant-table-thead > tr > th:last-child,
+  .ant-table-tbody > tr > td:last-child {
+    padding-right: 8px;
+  }
+}
+
+/* Main layout structure */
+.resource-layout {
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.main-content-layout {
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Main container */
+.site-content {
+  padding: 24px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.resource-page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Card styling */
+.resource-card {
+  margin-bottom: 24px;
   border-radius: 8px;
-  padding: 10px;
-  background: #fff;
-   /* ✅ ลดความกว้างให้เหลือ 80% ของ container */
-  margin: 20px;  /* ✅ จัดให้อยู่ตรงกลาง */ 
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
 }
 
+.resource-card .ant-card-head {
+  background-color: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.card-title-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title-container h4 {
+  margin: 0;
+}
+
+.card-extra-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Title styles */
+.section-title {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* Search and actions row */
+.search-actions-row {
+  margin-bottom: 20px;
+}
+
+/* Search input */
+.search-input {
+  border-radius: 6px;
+  padding: 8px 12px;
+  transition: all 0.3s;
+  border: 1px solid #d9d9d9;
+}
+
+.search-input:hover, .search-input:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Button styles */
+.resource-button {
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+/* Table container */
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  padding: 4px;
+}
+
+/* Resource table */
+.resource-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.resource-table .ant-table-thead > tr > th {
+  background-color: #f7f7f7;
+  color: #333;
+  font-weight: 600;
+}
+
+.table-row-light {
+  background-color: #ffffff;
+}
+
+.table-row-dark {
+  background-color: #fafafa;
+}
+
+.resource-table .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff;
+}
+
+/* Modal styling */
+.resource-modal {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.resource-modal .ant-modal-content {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.resource-modal .ant-modal-header {
+  background-color: #f7f7f7;
+  padding: 16px 24px;
+}
+
+.resource-modal .ant-modal-body {
+  padding: 24px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.submit-button {
+  min-width: 90px;
+}
+
+.cancel-button {
+  min-width: 90px;
+}
+
+/* Sidebar responsiveness */
+.sidebar {
+  z-index: 999;
+  height: 100vh;
+  position: fixed !important;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge styling */
+.ant-badge-count {
+  padding: 0 8px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 12px;
+}
+
+/* Tag styling */
+.ant-tag {
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .main-content-layout {
+    margin-left: 0 !important;
+  }
+
+  .site-content {
+    padding: 16px;
+  }
+
+  .resource-card {
+    margin-bottom: 16px;
+  }
+
+  .resource-modal {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-content {
+    padding: 12px;
+  }
+
+  .resource-card .ant-card-head-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .resource-card .ant-card-extra {
+    padding: 0;
+    margin-left: 0;
+  }
+
+  .card-extra-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .card-extra-buttons .ant-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-actions .ant-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .site-content {
+    padding: 8px;
+  }
+
+  .resource-card {
+    margin-bottom: 12px;
+  }
+
+  .resource-card .ant-card-head {
+    padding: 12px;
+  }
+
+  .resource-card .ant-card-body {
+    padding: 12px;
+  }
+
+  .search-actions-row {
+    margin-bottom: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .card-title-container h4 {
+    font-size: 16px;
+  }
+
+  .resource-modal .ant-modal-body {
+    padding: 16px;
+  }
+}
+
+/* Loading skeleton */
+.ant-skeleton {
+  padding: 16px;
+}
+
+/* Form styles */
+.ant-form-item-label > label {
+  font-weight: 500;
+  color: #333;
+}
+
+.ant-form-item-explain-error {
+  font-size: 12px;
+}
+
+.ant-input,
+.ant-select-selector {
+  border-radius: 6px;
+}
+
+.ant-input:hover,
+.ant-select-selector:hover {
+  border-color: #40a9ff;
+}
+
+.ant-input:focus,
+.ant-select-selector:focus,
+.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Message notification styles */
+.ant-message-custom-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tooltip styling */
+.ant-tooltip {
+  max-width: 500px;
+}
+
+.ant-tooltip-inner {
+  min-height: 28px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Modal confirmations */
+.ant-modal-confirm .ant-modal-confirm-btns {
+  margin-top: 24px;
+}
+
+/* Pagination styles */
+.ant-pagination {
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* Custom animation for elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.resource-card,
+.resource-table,
+.ant-form-item {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Custom styles for refresh button */
+button.ant-btn-text:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #1890ff;
+}
+
+/* Accessibility focus styles */
+:focus {
+  outline: 2px solid #1890ff;
+  outline-offset: 1px;
+}
+
+.ant-btn:focus,
+.ant-input:focus,
+.ant-select-focused .ant-select-selector {
+  outline: none;
+}

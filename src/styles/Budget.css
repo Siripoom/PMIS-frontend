@@ -1,38 +1,62 @@
 .budget-container {
-  padding: 2rem;
+  padding: 1rem;
   background-color: #f5f5f5;
-  justify-content: center;
-  height: 1100px;
-  display: flex;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .budget-card-container {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  width: 90%;
-  max-width: 1200px;
-  margin: 20px auto;
-  height: 300px;
-  flex-direction: column;
+  padding: 1.5rem;
+  width: 100%;
+  margin: 0 auto 1.5rem auto;
+  height: auto;
+  min-height: 300px;
 }
 
 .budget-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .budget-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.budget-title {
+  color: #979797;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .budget-title {
+    font-size: 1.75rem;
+    margin-bottom: 0;
+  }
 }
 
 .budget-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 1rem;
   width: 100%;
+}
 
+@media (min-width: 768px) {
+  .budget-actions {
+    justify-content: flex-end;
+  }
 }
 
 .budget-expense-button {
@@ -46,44 +70,39 @@
   align-items: center;
   justify-content: center;
   height: 38px;
-
 }
 
 .budget-expense-button:hover {
   background: #e6f7ff;
 }
 
-.budget-save-button {
-  background-color: #1890ff;
-  color: white;
-  border-radius: 8px;
-}
-
-/* ✅ ปรับให้การ์ดงบประมาณอยู่ในตำแหน่งที่ต้องการ */
+/* Budget Summary Cards */
 .budget-summary {
-  display: flex;
-  gap: 15px;
-  justify-content: flex-start;
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
   width: 100%;
-  margin-top: -59px;
+  margin-bottom: 1rem;
 }
 
-/* ✅ การ์ด "งบประมาณทั้งหมด" อยู่แยกด้านล่าง */
+@media (min-width: 768px) {
+  .budget-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .budget-total-wrapper {
-  display: flex;
-  justify-content: flex-start;
   width: 100%;
-  margin-top: 9px;
+  margin-bottom: 1rem;
 }
 
-/* ปรับขนาดของทุกการ์ดให้เหมือนกัน */
 .budget-card {
   border-radius: 12px;
-  padding: 10px;
+  padding: 1rem;
   text-align: center;
-  width: 315px;
-  height: 90px;
+  width: 100%;
+  height: auto;
+  min-height: 90px;
   font-size: 16px;
   font-weight: bold;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -93,7 +112,6 @@
   align-items: center;
 }
 
-/* สีพื้นหลังของแต่ละการ์ด */
 .budget-used {
   background-color: #ffeb3b;
   color: #333;
@@ -107,140 +125,144 @@
 .budget-total {
   background-color: #757575;
   color: white;
-  width: 650px;
-  text-align: left;
-  padding-left: 20px;
+  text-align: center;
 }
 
-/* ช่องค้นหาชิดขวา */
+@media (min-width: 768px) {
+  .budget-total {
+    text-align: left;
+    padding-left: 20px;
+  }
+}
+
+/* Search container */
 .budget-search-container {
   display: flex;
-  justify-content: flex-end;
-  margin-top:  -130px;
-  margin-left: 900px;
+  justify-content: flex-start;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .budget-search-container {
+    justify-content: flex-end;
+    margin-top: 0;
+  }
 }
 
 .budget-search-input {
-  width: 250px;
+  width: 100%;
+  max-width: 250px;
   border-radius: 8px;
   height: 40px;
 }
 
-/* สไตล์ของ h2 */
-.budget-title {
-  color: #979797;
-  font-size: 24px;
-  font-weight: bold;
-  margin-right: 800px;
+/* Charts Section */
+.budget-chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
 }
 
+@media (min-width: 1024px) {
+  .budget-chart-wrapper {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+}
 
-
-/*กราฟงบประมาณ*/
-.budget-chart-card {
-  display: flex;
+.budget-chart-card,
+.budget-linechart-card {
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  width: 540px;
-  height: 400px;
-  margin-left: 220px;
-  margin-top: -1480px;
+  padding: 1rem;
+  width: 100%;
+  height: auto;
+  min-height: 300px;
+  margin-bottom: 1.5rem;
 }
 
+@media (min-width: 1024px) {
+  .budget-chart-card,
+  .budget-linechart-card {
+    width: calc(50% - 0.75rem);
+  }
+}
 
 .budget-chart-title {
-  color: #000000;  /* สีดำ */
-  font-size: 15px;  /* ขนาดตัวอักษร 11px */
-  margin-bottom: 10px; /* เพิ่มระยะห่างจากขอบล่าง */
-  margin-top: -10px;
-}
-.budget-chart-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-left: 20px;
+  color: #000000;
+  font-size: 16px;
+  margin-bottom: 1rem;
 }
 
-
-/* ✅ ปรับตำแหน่งของการ์ด Line Chart ให้ขยับขึ้น */
-.budget-linechart-card {
-  width: 650px; /* ✅ คงขนาดเดิม */
-  height: 400px !important;/* ✅ ปรับความสูงของการ์ด */
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 20px auto;
-  position: relative;
-  top: -740px; /* ✅ ขยับขึ้นไปด้านบน */
-  margin-left: 10px;
-}
-
-/* ✅ ปรับขนาดของหัวข้อ */
-.budget-linechart-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-
-/* ✅ ปรับตำแหน่งของการ์ด "รายการโครงการ" ให้ชิดกับการ์ดอื่น */
+/* Projects Table Card */
 .budget-card-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px; /* ✅ ปรับระยะห่างให้พอดี */
-  margin-top: 10px; /* ✅ ลด margin-top ให้การ์ดขึ้นไปชิดการ์ดอื่น */
-  padding: 20px;
-
-  border-radius: 12px;
   width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  padding: 0 1rem;
+  margin-bottom: 1.5rem;
 }
 
-/* ✅ ปรับขนาดการ์ด "รายการโครงการ" ให้ใหญ่ขึ้นและดูสมดุล */
 .budget-card.additional-info {
-height: 706px;
- width: 2000px; /* ✅ ปรับความกว้างให้ใหญ่ขึ้น */
- margin-top: -750px;
-  margin-left: -20px;
-  margin-right: -20px;
+  width: 100%;
+  height: auto;
+  min-height: 500px;
+  padding: 1.5rem;
+  position: relative;
 }
 
 .budget-card.additional-info p {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: #949494;
-  position: absolute; /* ✅ ตรึงตำแหน่ง */
-  top: 70px; /* ✅ ขยับขึ้น */
-  left: 30px; /* ✅ ปรับให้อยู่ชิดซ้าย */
+  margin-bottom: 1rem;
 }
 
 .view-all-button {
   background-color: #1890ff;
   color: white;
   border-radius: 8px;
-  padding: 10px;
+  padding: 0.5rem 1rem;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 40px;
-  width: 120px;
-  margin-top: -30px;
-  margin-left: 920px;
-
+  margin-bottom: 1rem;
 }
-.projecttitle{
-  font-size: 18px;
+
+@media (min-width: 768px) {
+  .view-all-button {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+/* Modal Responsive Fixes */
+@media (max-width: 575px) {
+  .ant-modal {
+    max-width: 100% !important;
+    margin: 10px !important;
+  }
+
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* Responsive Table */
+@media (max-width: 767px) {
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+.projecttitle {
+  font-size: 1.125rem;
   font-weight: bold;
 }
